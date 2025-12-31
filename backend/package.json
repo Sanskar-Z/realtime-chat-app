@@ -1,0 +1,19 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "realtime-chat-app using websocket",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sanskar-Z/realtime-chat-app.git"
+  },
+  "author": "Sanskar Zine",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Sanskar-Z/realtime-chat-app/issues"
+  },
+  "homepage": "https://github.com/Sanskar-Z/realtime-chat-app#readme"
+}
