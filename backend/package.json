@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "realtime-chat-app using websocket",
   "main": "server.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/server.js"
   },
   "repository": {
     "type": "git",
@@ -15,5 +17,14 @@
   "bugs": {
     "url": "https://github.com/Sanskar-Z/realtime-chat-app/issues"
   },
-  "homepage": "https://github.com/Sanskar-Z/realtime-chat-app#readme"
+  "homepage": "https://github.com/Sanskar-Z/realtime-chat-app#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
 }

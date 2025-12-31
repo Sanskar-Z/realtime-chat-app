@@ -2,8 +2,11 @@ import React from 'react'
 import Sidebar from '../components/Sidebar'
 import ChatBox from '../components/Chatbox'
 import ChatInput from '../components/ChatInput'
+import useSocket from '../socket/useSocket'
 
 const Chat = () => {
+    const socket = useSocket();
+    
     return (
         <>
             <main className='mt-0 m-2 flex justify-center items-center h-screen gap-2'>
