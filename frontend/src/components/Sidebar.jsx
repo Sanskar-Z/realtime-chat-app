@@ -3,12 +3,12 @@ import React from 'react'
 const Sidebar = () => {
   return (
     <>
-        <div className='p-5 w-[25vw] h-[96vh] rounded-2xl bg-white border-2'>
-            <span className='font-bold text-xl text-blue-600'>Chat</span>
-            <hr className='m-2'/>
-            <h2 className="text-xl font-semibold mb-4">Online Users</h2>
+        <div className='p-3 w-[25vw] h-[96vh] rounded-2xl bg-gray-50 border border-gray-200 shadow-md'>
+            <p className='p-3 font-bold text-xl text-blue-600 bg-white shadow-sm rounded-lg'>ChatAPP</p>
+
             
-            <div className='flex-col gap-1.5'>
+            <div className='mt-2 p-3 flex-col gap-1.5   '>
+                <h2 className="text-xl font-semibold mb-4">Online Users</h2>
                 <li className='flex justify-between bg-gray-100 p-4 font-medium mb-2 rounded-xl'>
                     <span>🟢</span>
                     <span>User 1</span>

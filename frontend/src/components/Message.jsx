@@ -1,12 +1,12 @@
-import React from 'react'
+const Message = ({senderId, currentUserId, user, message }) => {
+    const isMe = senderId === currentUserId
 
-const Message = (props) => {
-return (
-    <div className='p-2 bg-gray-200 rounded-xl m-1.5'>
-            <h1 className='font-semibold'>{props.user}</h1>
-            <p>{'\u00A0     '}{props.message}</p>
-    </div>
-)
+    return (
+        <div className={`p-2 rounded-xl m-1.5 w-fit max-w-[70%] ${isMe?'bg-green-400 ml-auto' : 'bg-gray-100'}`}>
+            <span className="font-semibold block">{isMe?"You":user}</span>
+            <p className="pl-4">{message}</p>
+        </div>
+    )
 }
 
 export default Message
