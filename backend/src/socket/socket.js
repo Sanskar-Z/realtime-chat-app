@@ -6,22 +6,31 @@ import { createServer } from 'http'
 
 const server = createServer(app)
 
-const io = new Server(server, 
-    cors({
-        origin: process.env.CORS_ORIGIN,
-    credentials: true
-    })
-)
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:5173",
+        methods: ["GET", "POST"],
+        credentials: true
+    }
+})
 
 // When client connects
 io.on('connection', (socket) => {
-    console.log("\nUser connected")
-    console.log("user ID: ", socket.id)
+    const username = socket.handshake.auth.username
+
+    socket.username = username || "Anonymous"
+
+
+    console.log(`\nUser connected: ${socket.id} (${socket.username})`)
 
     socket.on("send-message", (data) => {
         console.log("Message from client: ", data)
 
-        io.emit("receive-message", data)
+        io.emit("receive-message", {
+            senderId: socket.id,
+            username: socket.username,
+            message: data.message
+        })
     })
 
 })

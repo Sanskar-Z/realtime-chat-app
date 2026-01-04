@@ -9,7 +9,7 @@ const port = process.env.PORT
 
 
 connectDB()
-.then((result) => {
+.then(() => {
     server.listen(port, () => {
         console.log(`Server is running at port: ${port}`)
     })

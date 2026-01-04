@@ -30,7 +30,7 @@ const ChatBox = () => {
             key={index}
             senderId={msg.senderId}
             currentUserId={socket.id}
-            user={`User ID: ${msg.user}`}
+            username={msg.username}
             message={msg.message ?? msg}
         />
         ))}

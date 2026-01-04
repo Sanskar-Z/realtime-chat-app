@@ -6,11 +6,9 @@ const ChatInput = () => {
 
   const sendMessage = () => {
     if (!message.trim()) return;
+    if (!socket.connected) return
     
-    socket.emit("send-message", {
-      senderId: socket.id,   // later from auth  // send user ID or socket ID
-      message: message,
-    });
+    socket.emit("send-message", {message});
     
     setMessage("");
   };

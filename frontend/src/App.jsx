@@ -1,14 +1,22 @@
 import {  } from 'react'
 import './App.css'
 import Chat from './pages/Chat'
-// import { io } from 'socket.io-client'
+import Register from './components/Register'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 function App() {
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <Chat/>
+    },
+  ])
+
 
   return (
-    <>
-      <Chat/>
-    </>
+    <div className='APP'>
+    <RouterProvider router={router} />
+    </div>
   )
 }
 
