@@ -23,6 +23,14 @@ io.on('connection', (socket) => {
 
     console.log(`\nUser connected: ${socket.id} (${socket.username})`)
 
+
+    // message to all users that a new user has joined
+    io.emit("receive-message", {
+    type: "system",
+    message: `${username} joined the chat`
+  })
+
+
     socket.on("send-message", (data) => {
         console.log("Message from client: ", data)
 
@@ -30,6 +38,22 @@ io.on('connection', (socket) => {
             senderId: socket.id,
             username: socket.username,
             message: data.message
+        })
+    })
+
+
+    socket.on("join-room", (roomName) => {
+        socket.join(roomName)
+        console.log(`${socket.username} joined room: ${roomName}`)
+    })
+
+    socket.on('disconnect', () => {
+        console.log(`User disconnected: ${socket.id} (${socket.username})`)
+
+        // message to all users that a user has left
+        io.emit("receive-message", {
+            type: "system",
+            message: `${socket.username} left the chat`
         })
     })
 

@@ -24,16 +24,22 @@ const ChatBox = () => {
 
   return (
     <>
-      <div className="h-full overflow-auto">
-        {messages.map((msg ,index) => (
-          <Message
+      <div className="h-full overflow-auto flex-col px-4 py-3 gap-1.5 flex">
+        {messages.map((msg ,index) => {
+        if (msg.type === "system") {
+            <div key={index} className="text-center text-xs text-gray-500 my-2">
+              {msg.message}
+            </div>
+          } 
+
+          return( <Message
             key={index}
             senderId={msg.senderId}
             currentUserId={socket.id}
             username={msg.username}
             message={msg.message ?? msg}
-        />
-        ))}
+          />)
+        })}
 
         {/* 👇 Invisible div for scrolling */}
       <div ref={bottomRef} />
