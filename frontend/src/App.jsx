@@ -1,8 +1,8 @@
-import {  } from 'react'
 import './App.css'
 import Chat from './pages/Chat'
 import Register from './components/Register'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import RegisterUser from './components/RegisterUser'
 
 function App() {
   const router = createBrowserRouter([
@@ -10,6 +10,12 @@ function App() {
       path: "/",
       element: <Chat/>
     },
+    
+    {
+      path: "/register",
+      element: <RegisterUser/>
+
+    }
   ])
 
 
