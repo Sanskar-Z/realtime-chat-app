@@ -15,8 +15,6 @@ const RegisterUser = () => {
             return
         }
 
-        console.log({ fullName, email, username, password })
-
         registerUser(fullName, email, username, password)
             .then((data) => {
                 console.log("User registered successfully:", data)
@@ -33,7 +31,6 @@ const RegisterUser = () => {
                     alert("Something went wrong. Please try again.")
                 }
             })
-
 
 
     }

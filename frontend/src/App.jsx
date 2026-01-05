@@ -3,6 +3,7 @@ import Chat from './pages/Chat'
 import Register from './components/Register'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import RegisterUser from './components/RegisterUser'
+import LoginUser from './components/LoginUser'
 
 function App() {
   const router = createBrowserRouter([
@@ -15,6 +16,11 @@ function App() {
       path: "/register",
       element: <RegisterUser/>
 
+    },
+
+    {
+      path: "/login",
+      element: <LoginUser/>
     }
   ])
 
