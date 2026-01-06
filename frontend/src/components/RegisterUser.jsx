@@ -1,11 +1,13 @@
 import { useState } from "react"
 import { registerUser } from "../services/authService.js"
+import { NavLink } from "react-router-dom"
 
 const RegisterUser = () => {
     const [fullName, setFullName] = useState("")
     const [email, setEmail] = useState("")
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleRegister = (e) => {
         e.preventDefault()
@@ -31,8 +33,6 @@ const RegisterUser = () => {
                     alert("Something went wrong. Please try again.")
                 }
             })
-
-
     }
 
     return (
@@ -90,18 +90,25 @@ const RegisterUser = () => {
                     </div>
 
                     {/* Password */}
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1 relative">
                         <label htmlFor="password" className="text-sm font-medium">
                             Password
                         </label>
                         <input
                             id="password"
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Enter password"
                             className="p-3 shadow-sm border border-gray-100 rounded-md focus:outline-none"
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(prev => !prev)}
+                            className="absolute right-3 top-9 text-sm text-gray-500 hover:text-gray-700"
+                        >
+                            {showPassword ? "Hide" : "Show"}
+                        </button>
                     </div>
 
                     <button
@@ -111,6 +118,9 @@ const RegisterUser = () => {
                         Register
                     </button>
                 </form>
+                <NavLink to="/login" className="text-sm text-center text-blue-500 hover:underline">
+                    Already have an account? Login here.
+                </NavLink>
             </div>
         </div>
     )

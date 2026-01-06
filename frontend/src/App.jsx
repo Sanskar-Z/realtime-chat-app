@@ -1,35 +1,30 @@
-import './App.css'
-import Chat from './pages/Chat'
-import Register from './components/Register'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import RegisterUser from './components/RegisterUser'
-import LoginUser from './components/LoginUser'
+import Chat from "./pages/Chat";
+import RegisterUser from "./components/RegisterUser";
+import LoginUser from "./components/LoginUser";
+import ProtectedRoute from "../routes/ProtectedRoute";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 function App() {
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <Chat/>
+      element: (
+        <ProtectedRoute>
+          <Chat />
+        </ProtectedRoute>
+      ),
     },
-    
     {
       path: "/register",
-      element: <RegisterUser/>
-
+      element: <RegisterUser />,
     },
-
     {
       path: "/login",
-      element: <LoginUser/>
-    }
-  ])
+      element: <LoginUser />,
+    },
+  ]);
 
-
-  return (
-    <div className='APP'>
-    <RouterProvider router={router} />
-    </div>
-  )
+  return <RouterProvider router={router} />;
 }
 
-export default App
+export default App;

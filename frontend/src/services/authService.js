@@ -49,3 +49,35 @@ export const loginUser = async (identifier, password) => {
         throw error
     }
 }
+
+
+export const getCurrentUser = async () => {
+    try {
+        const response = await axios.get(
+            `${API_URL}/me`,
+            {
+                withCredentials: true,
+            }
+        )
+
+        return response.data.user
+    } catch (error) {
+        console.warn("Auth check failed")
+        throw error
+    }
+}
+
+
+export const logoutUser = async () => {
+    try {
+        await axios.post(
+            `${API_URL}/logout`,
+            {},
+            {
+                withCredentials: true
+            }
+        )
+    } catch (error) {
+        console.log("Logout error: ", error.response?.data || error.message)
+    }
+}
