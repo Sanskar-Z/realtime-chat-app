@@ -7,6 +7,7 @@ import useSocket from "../socket/useSocket";
 import socket from "../socket/socket";
 import { useAuth } from "../context/useAuth";
 import { logoutUser } from "../services/authService";
+import { IoPersonSharp } from "react-icons/io5";
 
 const Chat = () => {
   const { user, loading, setUser } = useAuth();
@@ -51,7 +52,13 @@ const Chat = () => {
 
       <div className="p-3 flex flex-col w-full h-[96vh] border border-gray-200 shadow-md rounded-2xl">
         <nav className="p-3 flex justify-between items-center font-bold text-xl shadow-sm rounded-lg">
-          <h1>{user.username}</h1>
+          <div className="flex justify-between items-center font-bold text-xl gap-2">
+            <span className="w-10 h-10 rounded-full overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center">
+              <IoPersonSharp size={20} color="gray"/>
+            </span>
+
+            <h1>{user.username}</h1>
+          </div>
 
           <button
             onClick={handleLogout}

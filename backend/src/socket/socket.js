@@ -34,6 +34,7 @@ io.on("connection", (socket) => {
   io.emit("receive-message", {
     type: "system",
     message: `${socket.username} joined the chat`,
+    username: socket.username,
   });
 
   socket.on("send-message", (data) => {

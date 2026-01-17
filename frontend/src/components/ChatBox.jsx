@@ -25,11 +25,11 @@ const ChatBox = () => {
   return (
     <>
       <div className="h-full overflow-auto flex-col px-4 py-3 gap-1.5 flex">
-        {messages.map((msg ,index) => {
+        {messages.map((msg, index) => {
         if (msg.type === "system") {
-            <div key={index} className="text-center text-xs text-gray-500 my-2">
+          return(<div key={index} className="text-center text-xs text-gray-500 my-2">
               {msg.message}
-            </div>
+            </div>)
           } 
 
           return( <Message
