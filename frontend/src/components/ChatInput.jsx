@@ -1,17 +1,24 @@
 import { useState } from "react";
 import socket from "../socket/socket";
 
-const ChatInput = () => {
+const ChatInput = ({ activeUser }) => {
   const [message, setMessage] = useState("");
 
   const sendMessage = () => {
     if (!message.trim()) return;
     if (!socket.connected) return
-    
-    socket.emit("send-message", {message});
-    
+    if (!activeUser) return;
+
+
+    socket.emit("private-message", {
+      toUserId: activeUser,
+      message
+    })
+
     setMessage("");
   };
+
+
 
   return (
     <div className="mt-auto p-2 bg-white flex gap-2 border border-gray-100 shadow-sm rounded-xl shadow-t">
