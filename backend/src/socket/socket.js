@@ -1,7 +1,7 @@
 import { app } from '../app.js'
 import { Server } from 'socket.io'
 import { createServer } from 'http'
-import { log } from 'console'
+import { Message } from '../models/message.model.js'
 
 const server = createServer(app)
 
@@ -13,72 +13,84 @@ const io = new Server(server, {
   }
 })
 
-const onlineUsers = new Map();  //  UserId -> socketId
+// userId -> { socketId, username }
+const onlineUsers = new Map()
 
-// 🔐 SOCKET AUTH MIDDLEWARE (IMPORTANT)
+// SOCKET AUTH MIDDLEWARE
 io.use((socket, next) => {
-  const { userId, username } = socket.handshake.auth;
-  
+  const { userId, username } = socket.handshake.auth
   if (!userId || !username) {
-    return next(new Error("Unauthorized socket connection"));
+    return next(new Error("Unauthorized socket connection"))
   }
 
-  onlineUsers.set(userId, socket.id);
+  onlineUsers.set(userId, { socketId: socket.id, username })
+  socket.userId = userId
+  socket.username = username
 
-  socket.userId = userId;
-  socket.username = username;
-
-  next();
-}); 
-
+  next()
+})
 
 // When client connects
 io.on("connection", (socket) => {
-  console.log(`User connected: ${socket.id} (${socket.username})`);
+  console.log(`User connected: ${socket.id} (${socket.username})`)
 
   // system join message
   io.emit("receive-message", {
     type: "system",
     message: `${socket.username} joined the chat`,
-  });
+  })
 
-  socket.on("send-message", (data) => {
-    io.emit("receive-message", {
-      senderId: socket.id,
-      username: socket.username,
-      message: data.message,
-    });
-  });
+  // send online users list
+  io.emit(
+    "online-users",
+    Array.from(onlineUsers.entries()).map(([userId, data]) => ({
+      userId,
+      username: data.username
+    }))
+  )
 
+  socket.on("private-message", async ({ toUserId, message }) => {
+    try {
+      const user = onlineUsers.get(toUserId)
+      if (!user) return
 
-  console.log(onlineUsers);
-  io.emit("online-users", Array.from(onlineUsers.keys()));
-  
-  socket.on("private-message", ({ toUserId, message }) => {
-    const receivedSockedId = onlineUsers.get(toUserId);
+      const savedMessage = await Message.create({
+        sender: socket.userId,
+        receiver: toUserId,
+        message,
+      })
 
-    if(!receivedSockedId) return;
+      const msgPayload = {
+        _id: savedMessage._id,
+        senderId: savedMessage.sender,
+        receiverId: toUserId,
+        message: savedMessage.message,
+        createdAt: savedMessage.createdAt,
+      }
 
-    const msgPayload = {
-      senderId: socket.userId,
-      senderName: socket.username,
-      message,
-    };
-
-    io.to(receivedSockedId).emit("private-message", msgPayload)
-
-    socket.emit("private-message", msgPayload)
+      io.to(user.socketId).emit("private-message", msgPayload)
+      socket.emit("private-message", msgPayload)
+    } catch (err) {
+      console.error("Private message error:", err)
+    }
   })
 
   socket.on("disconnect", () => {
-    onlineUsers.delete(socket.userId);
-    io.emit("online-users", Array.from(onlineUsers.keys()));
-    
+    onlineUsers.delete(socket.userId)
+
+    io.emit(
+      "online-users",
+      Array.from(onlineUsers.entries()).map(([userId, data]) => ({
+        userId,
+        username: data.username
+      }))
+    )
+
     io.emit("receive-message", {
       type: "system",
       message: `${socket.username} left the chat`,
-    });
-  });
-});
+    })
+  })
+})
 
-export { server, io };
+export { server, io }

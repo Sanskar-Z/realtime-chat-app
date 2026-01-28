@@ -27,7 +27,7 @@ const ChatInput = ({ activeUser }) => {
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Type a message..."
-        className="flex-1 rounded-lg px-4 py-2 focus:outline-none"
+        className="flex-1 rounded-lg px-4 py-2 focus:outline-none overflow-y-auto"
       />
       <button
         onClick={sendMessage}

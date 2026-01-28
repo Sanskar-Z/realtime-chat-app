@@ -20,11 +20,11 @@ const ChatBox = ({ messages = [], currentUserId }) => {
           } 
 
           return( <Message
-            key={index}
+            key={msg._id}
             senderId={msg.senderId}
             currentUserId={currentUserId}
-            username={msg.username}
             message={msg.message ?? msg}
+            createdAt={msg.createdAt}
           />)
         })}
 
