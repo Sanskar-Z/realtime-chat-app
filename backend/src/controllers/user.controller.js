@@ -38,7 +38,7 @@ const registerUser = asyncHandler( async (req, res) => {
         throw new ApiError(400, "All fields are required")
     }
 
-    // check username or emial
+    // check username or email
     const existedUser = await User.findOne({
         $or:[{username}, {email}]
     })
@@ -195,7 +195,7 @@ const refreshAccessToken = asyncHandler( async (req ,res) => {
         .json(
             new ApiResponse(
                 200,
-                {accessToken, refreshToken: newRefreshToken},
+                {accessToken, refreshToken},
                 "Access token refreshed"
             )
         )

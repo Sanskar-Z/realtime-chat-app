@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
+import ConversationList from "../components/ConversationList";
 import ChatBox from "../components/ChatBox";
 import ChatInput from "../components/ChatInput";
 import useSocket from "../socket/useSocket";
@@ -8,23 +9,23 @@ import socket from "../socket/socket";
 import { useAuth } from "../context/useAuth";
 import { BsFillPersonFill } from "react-icons/bs";
 import { ThreeDot } from "react-loading-indicators";
-import ChatAPP from "../images/ChatAPP.png"
 
 const Chat = () => {
   const { user, loading } = useAuth();
+
   const [messages, setMessages] = useState({});
   const [activeUser, setActiveUser] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState([]);
 
   useSocket();
+
+  /* ---------------- SOCKET CONNECT ---------------- */
 
   useEffect(() => {
     if (loading || !user) return;
 
     if (!socket.connected) {
-      socket.auth = {
-        userId: user._id,
-        username: user.username,
-      };
+      socket.auth = { userId: user._id, username: user.username };
       socket.connect();
     }
 
@@ -33,12 +34,24 @@ const Chat = () => {
     };
   }, [user, loading]);
 
+  /* ---------------- ONLINE USERS ---------------- */
+
+  useEffect(() => {
+    const handleOnlineUsers = (users) => setOnlineUsers(users);
+
+    socket.on("online-users", handleOnlineUsers);
+
+    return () => socket.off("online-users", handleOnlineUsers);
+  }, []);
+
+  /* ---------------- RECEIVE MESSAGE ---------------- */
+
   useEffect(() => {
     const handlePrivateMessage = (msg) => {
+      if (!msg) return;
+
       const chatUserId =
-        msg.senderId === user._id
-          ? msg.receiverId
-          : msg.senderId;
+        msg.senderId === user._id ? msg.receiverId : msg.senderId;
 
       if (!chatUserId) return;
 
@@ -50,41 +63,80 @@ const Chat = () => {
 
     socket.on("private-message", handlePrivateMessage);
 
-    return () => {
-      socket.off("private-message", handlePrivateMessage);
-    };
-  }, [activeUser, user]);
+    return () => socket.off("private-message", handlePrivateMessage);
+  }, [user]);
 
-  if (loading) return <div className="h-screen flex items-center justify-center"><ThreeDot /></div>;
+  /* ---------------- LOADING ---------------- */
+
+  if (loading)
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <ThreeDot />
+      </div>
+    );
+
   if (!user) return <Navigate to="/login" replace />;
 
+  const activeUserObj = onlineUsers.find(
+    (u) => u.userId === activeUser
+  );
+
+  /* ---------------- UI ---------------- */
+
   return (
-    <main className="m-2 flex gap-2">
-      <Sidebar onSelectUser={setActiveUser} activeUser={activeUser} />
+    <main className="flex h-screen bg-gray-100">
 
-      <div className={`${activeUser ? 'hidden' : 'flex flex-col justify-center w-full items-center h-[96vh] rounded-2xl shadow-md p-3'}`}>
-        <img src={ChatAPP} alt="Chat App" className="w-40 h-40" />
-        <span className="text-md">Select a user</span>
-      </div>
+      <Sidebar />
 
-      <div className={`flex flex-col w-full h-[96vh] rounded-2xl shadow-md p-3 ${activeUser ? '' : 'hidden'}`}>
-        <nav className="flex justify-between items-center font-bold text-xl shadow-sm p-3 rounded-lg">
-          <div className="flex gap-2 items-center">
-            <span className="bg-gray-100 rounded-4xl w-10 h-10 flex items-center justify-center">
-              <BsFillPersonFill size={24} color="gray" />
-            </span>
+      <ConversationList
+        onlineUsers={onlineUsers}
+        activeUser={activeUser}
+        onSelectUser={setActiveUser}
+      />
 
-            <h1>{activeUser || "Select a user"}</h1>
+      {/* Chat window */}
+
+      <section className="flex-1 flex flex-col bg-gray-50">
+
+        {activeUser ? (
+          <>
+            {/* Header */}
+
+            <header className="h-20 bg-white border-b border-gray-100 flex items-center px-8">
+
+              <span className="bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center">
+                <BsFillPersonFill />
+              </span>
+
+              <div className="ml-4">
+                <h2 className="font-bold text-lg">
+                  {activeUserObj?.username || "User"}
+                </h2>
+
+                <p className="text-xs text-green-500">Online</p>
+              </div>
+            </header>
+
+            {/* Messages */}
+
+            <ChatBox
+              messages={messages[activeUser] || []}
+              currentUserId={user._id}
+            />
+
+            {/* Input */}
+
+            <ChatInput activeUser={activeUser} />
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
+
+            <div className="text-6xl mb-4">💬</div>
+
+            <p className="text-xl">Select a user to start chatting</p>
           </div>
-        </nav>
-
-        <ChatBox
-          messages={messages[activeUser] || []}
-          currentUserId={user._id}
-        />
-
-        <ChatInput activeUser={activeUser} />
-      </div>
+        )}
+      </section>
     </main>
   );
 };

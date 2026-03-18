@@ -1,29 +1,13 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import socket from "../socket/socket";
-import chatIcon from "../images/ChatAPP.png";
-import { BsFillPersonFill } from "react-icons/bs";
 import { IoLogOutOutline } from "react-icons/io5";
+import chatIcon from "../images/ChatAPP.png";
 import { logoutUser } from "../services/authService";
 import { useAuth } from "../context/useAuth";
+import { useNavigate } from "react-router-dom";
+import socket from "../socket/socket";
 
-const Sidebar = ({ onSelectUser, activeUser }) => {
+const Sidebar = () => {
   const { setUser } = useAuth();
-  const [onlineUsers, setOnlineUsers] = useState([]);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleOnlineUsers = (users) => {
-      setOnlineUsers(users);
-    };
-
-    socket.on("online-users", handleOnlineUsers);
-
-    return () => {
-      socket.off("online-users", handleOnlineUsers);
-    };
-  }, []);
-
 
   const handleLogout = async () => {
     await logoutUser();
@@ -33,59 +17,28 @@ const Sidebar = ({ onSelectUser, activeUser }) => {
   };
 
   return (
-    <div className="p-3 w-[40vw] h-[96vh] rounded-2xl bg-white border border-gray-200 shadow-md relat ive overflow-hidden">
-      {console.log("Online-users: ", onlineUsers)}
+    <aside className="w-20 md:w-24 bg-gray-900 flex flex-col items-center py-6 text-white">
 
-      {/* Header */}
-      <div className="p-3 flex items-center gap-2 sticky top-0 bg-white z-10 justify-between">
-        <span className="flex gap-2 items-center">
-          <img src={chatIcon} alt="Chat App" className="w-10 h-10" />
-          <span className="font-bold text-xl text-blue-600">ChatAPP</span>
-        </span>
+      {/* Logo */}
+      <div className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-gray-800 transition">
+  <img src={chatIcon} alt="chat" className="w-10 h-10 object-contain" />
+</div>
 
+      {/* Menu */}
+      <nav className="flex flex-col space-y-6 mt-10">
+        <button className="p-3 bg-gray-700 rounded-lg">💬</button>
+      </nav>
+
+      {/* Logout */}
+      <div className="mt-auto pb-4">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-1 rounded-lg px-2 py-1 text-sm leading-none cursor-pointer hover:bg-gray-100 hover:text-red-600"
+          className="p-3 hover:bg-gray-700 rounded-lg"
         >
-          <IoLogOutOutline size={14} />
-          <span>Logout</span>
+          <IoLogOutOutline size={22} />
         </button>
       </div>
-
-      {/* Online users */}
-      <div className="mt-2 p-3 flex flex-col gap-1.5 shadow-md bg-gray-50 rounded-lg h-[89%]">
-        <h2 className="text-xl font-semibold mb-2">Online Users</h2>
-
-        <div className="flex-1 overflow-auto">
-          {console.log(socket)}
-
-          {onlineUsers.size === 0 ? (
-            <p className="text-gray-500">No users online</p>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {onlineUsers
-                .filter((id) => id.userId != socket?.auth?.userId)
-                .map((user) => (
-                  <li
-                    key={user.userId}
-                    onClick={() => onSelectUser(user.userId)}
-                    className={`p-2 rounded-lg cursor-pointer flex gap-3 items-center
-              ${activeUser === user.userId ? "bg-blue-100" : "bg-gray-100 hover:bg-blue-50"}`}
-                  >
-                    {/* avatar */}
-                    <span className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
-                      <BsFillPersonFill size={20} color="" />
-                    </span>
-
-                    <span className="font-medium">{user.username}</span>
-
-                  </li>
-                ))}
-            </ul>
-          )}
-        </div>
-      </div>
-    </div>
+    </aside>
   );
 };
 
