@@ -9,6 +9,7 @@ import socket from "../socket/socket";
 import { useAuth } from "../context/useAuth";
 import { BsFillPersonFill } from "react-icons/bs";
 import { ThreeDot } from "react-loading-indicators";
+import chatIcon from "../images/ChatAPP.png";
 
 const Chat = () => {
   const { user, loading } = useAuth();
@@ -129,9 +130,11 @@ const Chat = () => {
             <ChatInput activeUser={activeUser} />
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
+          <div className="flex-1 flex flex-col items-center justify-center text-gray-400 select-none">
 
-            <div className="text-6xl mb-4">💬</div>
+            <div className="text-6xl mb-4">
+              <img src={chatIcon} alt="chat" className="w-50 h-50 object-contain" />
+            </div>
 
             <p className="text-xl">Select a user to start chatting</p>
           </div>
