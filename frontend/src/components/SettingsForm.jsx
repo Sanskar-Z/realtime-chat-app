@@ -1,9 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../context/useAuth.js";
+import { updateUserDetails } from "../services/authService.js";
 
 const SettingsForm = () => {
+  const { user, setUser } = useAuth();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [fullName, setFullName] = useState(user?.fullName || "");
+  const [username, setUsername] = useState(user?.username || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [statusMessage, setStatusMessage] = useState(user?.statusMessage || "");
+  const [bio, setBio] = useState(user?.bio || "");
+
+  const [loading, setLoading] = useState(false);
 
   const handlePasswordChange = (e) => {
     e.preventDefault();
@@ -18,11 +29,44 @@ const SettingsForm = () => {
     setConfirmPassword("");
   };
 
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const updatedUser = {
+        fullName,
+        username,
+        email,
+        statusMessage,
+        bio
+      };
+      const response = await updateUserDetails(updatedUser);
+      if (response?.user) {
+        setUser(response.user);
+      } else {
+        setUser((prev) => ({ ...prev, ...updatedUser }));
+      }
+    } catch (error) {
+      alert(error?.response?.data?.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (!user) return;
+    setFullName(user.fullName || "");
+    setUsername(user.username || "");
+    setEmail(user.email || "");
+    setStatusMessage(user.statusMessage || "");
+    setBio(user.bio || "");
+  };
+
   return (
     <div className="space-y-12 mt-8">
 
       {/* Personal Info */}
-      <form className="space-y-8">
+      <form onSubmit={handleUpdateUser} className="space-y-8">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
           <h3 className="text-lg font-semibold text-gray-900">Profile Information</h3>
 
@@ -31,8 +75,10 @@ const SettingsForm = () => {
               <label className="text-sm font-medium text-gray-700">Full Name</label>
               <input
                 type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 placeholder="Full Name"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                className="required w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
               />
             </div>
 
@@ -40,8 +86,10 @@ const SettingsForm = () => {
               <label className="text-sm font-medium text-gray-700">Username</label>
               <input
                 type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 placeholder="Username"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                className="required w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
               />
             </div>
           </div>
@@ -51,8 +99,10 @@ const SettingsForm = () => {
             <label className="text-sm font-medium text-gray-700">Email</label>
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Email Address"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+              className="required w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
             />
           </div>
 
@@ -60,6 +110,8 @@ const SettingsForm = () => {
             <label className="text-sm font-medium text-gray-700">Status Message</label>
             <input
               type="text"
+              value={statusMessage}
+              onChange={(e) => setStatusMessage(e.target.value)}
               placeholder="What's on your mind?"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
             />
@@ -70,6 +122,8 @@ const SettingsForm = () => {
             <textarea
               placeholder="Tell us about yourself..."
               rows={3}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
             />
           </div>
@@ -79,13 +133,14 @@ const SettingsForm = () => {
         <div className="flex justify-end gap-3">
           <button
             type="button"
-            className="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+            onClick={handleCancel}
+            className="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition active:bg-gray-100"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="px-6 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow transition"
+            className="px-6 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow transition active:bg-indigo-800"
           >
             Save Changes
           </button>
@@ -141,7 +196,7 @@ const SettingsForm = () => {
         <div className="flex justify-end gap-3">
           <button
             type="submit"
-            className="px-6 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow transition"
+            className="px-6 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow transition active:bg-indigo-800"
           >
             Change Password
           </button>

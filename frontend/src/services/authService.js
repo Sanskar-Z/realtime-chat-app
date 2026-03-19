@@ -1,23 +1,14 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8001/api/v1/users";
-
+import api from "./api";
 
 export const registerUser = async (fullName, email, username, password) => {
     try {
-        const response = await axios.post(
-            `${API_URL}/register`,
-            {
-                fullName,
-                email,
-                username,
-                password,
-            },
-            {
-                withCredentials: true,
-            }
-        );
-
+        const response = await api.post("/users/register", {
+            fullName,
+            email,
+            username,
+            password,
+        });
+        alert(response.data.message);
         return response.data;
     } catch (error) {
         console.error(
@@ -26,58 +17,49 @@ export const registerUser = async (fullName, email, username, password) => {
         );
         throw error;
     }
-}
-
+};
 
 export const loginUser = async (identifier, password) => {
     try {
-        const response = await axios.post(
-            `${API_URL}/login`,
-            {
-                username: identifier,
-                email: identifier,
-                password,
-            },
-            {
-                withCredentials: true,
-            }
-        )
-
-        return response.data
+        const response = await api.post("/users/login", {
+            username: identifier,
+            email: identifier,
+            password,
+        });
+        alert(response.data.message);
+        return response.data;
     } catch (error) {
-        console.log("Login error:", error.response?.data || error.message)
-        throw error
+        console.log("Login error:", error.response?.data || error.message);
+        throw error;
     }
-}
-
+};
 
 export const getCurrentUser = async () => {
     try {
-        const response = await axios.get(
-            `${API_URL}/me`,
-            {
-                withCredentials: true,
-            }
-        )
-
-        return response.data.user
+        const response = await api.get("/users/current-user");
+        return response.data.user;
     } catch (error) {
-        console.warn("Auth check failed")
-        throw error
+        console.warn("Auth check failed");
+        throw error;
     }
-}
-
+};
 
 export const logoutUser = async () => {
     try {
-        await axios.post(
-            `${API_URL}/logout`,
-            {},
-            {
-                withCredentials: true
-            }
-        )
+        const response = await api.post("/users/logout");
+        alert(response.data.message);
     } catch (error) {
-        console.log("Logout error: ", error.response?.data || error.message)
+        alert(error.response?.data.message);
     }
-}
+};
+
+export const updateUserDetails = async (userData) => {
+    try {
+        const response = await api.post("/users/update-user", userData);
+        alert(response.data.message);
+        return response.data;
+    } catch (error) {
+        alert(error.response?.data.message);
+        throw error;
+    }
+};

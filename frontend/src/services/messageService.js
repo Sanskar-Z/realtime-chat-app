@@ -1,11 +1,14 @@
-import axios from "axios";
-
-const API = import.meta.env.VITE_API_URL + "/messages";
+import api from "./api"; // adjust path if needed
 
 export const fetchPrivateMessages = async (userId) => {
-    const res = await axios.get(`${API}/private/${userId}`, {
-        withCredentials: true,
-    });
-
-    return res.data;
-}
+    try {
+        const res = await api.get(`/messages/private/${userId}`);
+        return res.data;
+    } catch (error) {
+        console.error(
+            "Fetch messages error:",
+            error.response?.data || error.message
+        );
+        throw error;
+    }
+};
