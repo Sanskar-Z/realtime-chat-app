@@ -62,6 +62,23 @@ const SettingsForm = () => {
     setBio(user.bio || "");
   };
 
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const response = await updatePassword(oldPassword, newPassword, confirmPassword);
+      if (response?.user) {
+        setUser(response.user);
+      } else {
+        setUser((prev) => ({ ...prev, ...updatedUser }));
+      }
+    } catch (error) {
+      alert(error?.response?.data?.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="space-y-12 mt-8">
 

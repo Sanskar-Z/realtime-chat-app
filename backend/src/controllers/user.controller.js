@@ -110,7 +110,7 @@ const loginUser = asyncHandler(async (req, res) => {
     // to send cookies
     const options = {
         httpOnly: true,
-        secure: true
+        secure: false
     }      // if these fields are true then cookies are only modifiable from server and not from frontend
 
     return res
@@ -146,7 +146,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 
     const options = {
         httpOnly: true,
-        secure: true
+        secure: false
     }
 
     return res
@@ -181,7 +181,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
         const options = {
             httpOnly: true,
-            secure: true,
+            secure: false,
             sameSite: "lax"
         }
 
@@ -222,9 +222,27 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 const updateUserDetails = asyncHandler(async (req, res) => {
     const { fullName, username, email, statusMessage, bio } = req.body
 
-    if (!fullName && !username && !email && !statusMessage && !bio) {
-        throw new ApiError(400, "Atleast one field is required")
+    if (!fullName?.trim()) {
+        throw new ApiError(400, "Full name is required")
     }
+
+    if (!username?.trim()) {
+        throw new ApiError(400, "Username is required")
+    }
+
+    if (!email.trim()) {
+        throw new ApiError(400, "Email is required")
+    }
+
+    const existedUser = await User.findOne({
+        $or: [{ username }, { email }],
+        _id: { $ne: req.user._id }  // exclude current user
+    })
+
+    if (existedUser) {
+        throw new ApiError(409, "User with email or username already exists")
+    }
+
 
     const user = await User.findByIdAndUpdate(
         req.user._id,
@@ -253,11 +271,57 @@ const updateUserDetails = asyncHandler(async (req, res) => {
         )
 })
 
+const updatePassword = asyncHandler(async (req, res) => {
+    const { oldPassword, newPassword, confirmPassword } = req.body
+
+    if (!oldPassword?.trim()) {
+        throw new ApiError(400, "Old password is required")
+    }
+
+    if (!newPassword?.trim()) {
+        throw new ApiError(400, "New password is required")
+    }
+
+    if (!confirmPassword?.trim()) {
+        throw new ApiError(400, "Confirm password is required")
+    }
+
+    if (newPassword !== confirmPassword) {
+        throw new ApiError(400, "New password and confirm new password do not match")
+    }
+
+    const user = await User.findById(req.user._id)
+
+    if (!user) {
+        throw new ApiError(404, "User not found")
+    }
+
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+
+    if (!isPasswordCorrect) {
+        throw new ApiError(401, "Invalid old password")
+    }
+
+    user.password = newPassword
+    await user.save()
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                { user },
+                "Password updated successfully"
+            )
+        )
+})
+
 export {
     registerUser,
     loginUser,
     logoutUser,
     refreshAccessToken,
     getCurrentUser,
-    updateUserDetails
+    updateUserDetails,
+    updatePassword
 }

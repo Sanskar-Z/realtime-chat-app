@@ -55,7 +55,23 @@ export const logoutUser = async () => {
 
 export const updateUserDetails = async (userData) => {
     try {
-        const response = await api.post("/users/update-user", userData);
+        const response = await api.patch("/users/update-user", userData);
+        alert(response.data.message);
+        return response.data;
+    } catch (error) {
+        alert(error.response?.data.message);
+        throw error;
+    }
+};
+
+
+export const updatePassword = async (oldPassword, newPassword, confirmPassword) => {
+    try {
+        const response = await api.patch("/users/update-password", {
+            oldPassword,
+            newPassword,
+            confirmPassword
+        });
         alert(response.data.message);
         return response.data;
     } catch (error) {
