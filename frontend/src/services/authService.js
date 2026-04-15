@@ -37,7 +37,7 @@ export const loginUser = async (identifier, password) => {
 export const getCurrentUser = async () => {
     try {
         const response = await api.get("/users/current-user");
-        return response.data.user;
+        return response.data.data;
     } catch (error) {
         console.warn("Auth check failed");
         throw error;
