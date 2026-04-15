@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AuthContext } from "./AuthContext";
-import { getCurrentUser } from "../services/authService";
+import { getCurrentUser, refreshAccessToken } from "../services/authService";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -12,7 +12,13 @@ export const AuthProvider = ({ children }) => {
         const currentUser = await getCurrentUser();
         setUser(currentUser);
       } catch {
-        setUser(null);
+        try {
+          await refreshAccessToken();
+          const currentUser = await getCurrentUser();
+          setUser(currentUser);
+        } catch (error) {
+          setUser(null);
+        }
       } finally {
         setLoading(false);
       }

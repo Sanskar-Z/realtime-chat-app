@@ -110,7 +110,8 @@ const loginUser = asyncHandler(async (req, res) => {
     // to send cookies
     const options = {
         httpOnly: true,
-        secure: false
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
     }      // if these fields are true then cookies are only modifiable from server and not from frontend
 
     return res
@@ -146,7 +147,8 @@ const logoutUser = asyncHandler(async (req, res) => {
 
     const options = {
         httpOnly: true,
-        secure: false
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
     }
 
     return res
@@ -181,8 +183,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
         const options = {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax"
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
         }
 
         const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)

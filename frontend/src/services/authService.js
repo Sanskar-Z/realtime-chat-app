@@ -79,3 +79,13 @@ export const updatePassword = async (oldPassword, newPassword, confirmPassword) 
         throw error;
     }
 };
+
+export const refreshAccessToken = async () => {
+    try {
+        const response = await api.post("/users/refresh-token");
+        return response.data;
+    } catch (error) {
+        alert(error.response?.data.message);
+        throw error;
+    }
+}
