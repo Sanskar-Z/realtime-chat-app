@@ -17,37 +17,29 @@ const Chat = () => {
   const [messages, setMessages] = useState({});
   const [activeUser, setActiveUser] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(true);
 
   useSocket();
 
-  /* ---------------- SOCKET CONNECT ---------------- */
-
+  // ONLINE USERS
   useEffect(() => {
-    if (loading || !user) return;
-
-    if (!socket.connected) {
-      socket.auth = { userId: user._id, username: user.username };
-      socket.connect();
+    const handleOnlineUsers = (users) => {
+      setOnlineUsers(users);
+      setUsersLoading(false);
     }
 
-    return () => {
-      if (socket.connected) socket.disconnect();
-    };
-  }, [user, loading]);
-
-  /* ---------------- ONLINE USERS ---------------- */
-
-  useEffect(() => {
-    const handleOnlineUsers = (users) => setOnlineUsers(users);
-
     socket.on("online-users", handleOnlineUsers);
+
+    socket.emit("get-online-users");
 
     return () => socket.off("online-users", handleOnlineUsers);
   }, []);
 
-  /* ---------------- RECEIVE MESSAGE ---------------- */
 
+  // PRIVATE MESSAGE
   useEffect(() => {
+    if (!user?._id) return;
+
     const handlePrivateMessage = (msg) => {
       if (!msg) return;
 
@@ -67,8 +59,6 @@ const Chat = () => {
     return () => socket.off("private-message", handlePrivateMessage);
   }, [user]);
 
-  /* ---------------- LOADING ---------------- */
-
   if (loading)
     return (
       <div className="h-screen flex items-center justify-center">
@@ -82,8 +72,6 @@ const Chat = () => {
     (u) => u.userId === activeUser
   );
 
-  /* ---------------- UI ---------------- */
-
   return (
     <main className="flex h-screen bg-gray-100">
 
@@ -93,6 +81,8 @@ const Chat = () => {
         onlineUsers={onlineUsers}
         activeUser={activeUser}
         onSelectUser={setActiveUser}
+        currentUserId={user._id}
+        usersLoading={usersLoading}
       />
 
       {/* Chat window */}

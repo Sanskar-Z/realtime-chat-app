@@ -49,6 +49,16 @@ io.on("connection", (socket) => {
     }))
   )
 
+  socket.on("get-online-users", () => {
+    socket.emit(
+      "online-users",
+      Array.from(onlineUsers.entries()).map(([userId, data]) => ({
+        userId,
+        username: data.username
+      }))
+    )
+  })
+
   socket.on("private-message", async ({ toUserId, message }) => {
     try {
       const user = onlineUsers.get(toUserId)

@@ -1,4 +1,5 @@
 import { IoLogOutOutline, IoSettingsOutline } from "react-icons/io5";
+import { MdOutlineMessage } from "react-icons/md";
 import chatIcon from "../images/ChatAPP.png";
 import { logoutUser } from "../services/authService";
 import { useAuth } from "../context/useAuth";
@@ -21,7 +22,9 @@ const Sidebar = () => {
   };
 
   const menuItems = [
-    { icon: "💬", label: "Chat", onClick: () => navigate("/") },
+    {
+      icon: <MdOutlineMessage size={20} />, label: "Chat", onClick: () => navigate("/")
+    },
     { icon: <IoSettingsOutline size={20} />, label: "Settings", onClick: () => navigate("/settings") },
     // Add more menu items here
   ];
@@ -41,7 +44,7 @@ const Sidebar = () => {
             key={index}
             onClick={item.onClick}
             aria-label={item.label}
-            className="p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition flex items-center justify-center"
+            className="p-3 rounded-lg hover:bg-gray-600 transition flex items-center justify-center"
           >
             {item.icon}
           </button>
