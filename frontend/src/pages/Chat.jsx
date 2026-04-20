@@ -113,6 +113,7 @@ const Chat = () => {
             <ChatBox
               messages={messages[activeUser] || []}
               currentUserId={user._id}
+              activeUser={activeUser}
             />
 
             {/* Input */}

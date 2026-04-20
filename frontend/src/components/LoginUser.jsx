@@ -38,13 +38,13 @@ const LoginUser = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-indigo-200">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-[#673AB7]">
       <main className="w-full max-w-md p-6 animate-fade-in">
         <section className="bg-white rounded-2xl shadow-xl overflow-hidden p-8 md:p-10">
 
           {/* Header */}
           <header className="text-center mb-8">
-              <img src={logo} alt="Chat App Logo" className="w-20 mx-auto mb-4" />
+            <img src={logo} alt="Chat App Logo" className="w-20 mx-auto mb-4" />
             {/* <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl mb-4 shadow-lg shadow-indigo-200">
             </div> */}
 
@@ -55,7 +55,7 @@ const LoginUser = () => {
             <p className="text-gray-500 mt-2">
               Sign in to continue your conversations
             </p>
-          </header> 
+          </header>
 
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-5">

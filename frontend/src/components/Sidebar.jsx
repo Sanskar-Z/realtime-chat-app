@@ -30,10 +30,10 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="w-20 md:w-24 bg-gray-900 flex flex-col items-center py-6 text-white h-screen">
+    <aside className="w-20 md:w-24 bg-gradient-to-br from-[#330a7e] to-[#1c034b] flex flex-col items-center py-6 text-white h-screen">
 
       {/* Logo */}
-      <div className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-gray-800 transition">
+      <div className="w-12 h-12 flex items-center justify-center rounded-xl">
         <img src={chatIcon} alt="ChatApp Logo" className="w-10 h-10 object-contain" />
       </div>
 
@@ -44,7 +44,7 @@ const Sidebar = () => {
             key={index}
             onClick={item.onClick}
             aria-label={item.label}
-            className="p-3 rounded-lg hover:bg-gray-600 transition flex items-center justify-center"
+            className="p-3 rounded-lg hover:bg-gray-700 transition flex items-center justify-center"
           >
             {item.icon}
           </button>
