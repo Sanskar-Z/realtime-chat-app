@@ -79,7 +79,7 @@ io.on("connection", (socket) => {
       }
 
       io.to(user.socketId).emit("private-message", msgPayload)
-      socket.emit("private-message", msgPayload)
+      socket.emit("message-sent", msgPayload)
     } catch (err) {
       console.error("Private message error:", err)
     }
