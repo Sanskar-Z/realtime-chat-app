@@ -136,7 +136,8 @@ const logoutUser = asyncHandler(async (req, res) => {
         req.user._id,
         {
             $set: {
-                refreshToken: undefined
+                refreshToken: undefined,
+                lastSeen: new Date()
             }
         },
         {
@@ -318,6 +319,18 @@ const updatePassword = asyncHandler(async (req, res) => {
         )
 })
 
+const getAllUsers = asyncHandler(async (req, res) => {
+    const users = await User.find({ _id: { $ne: req.user._id } })  // exclude self
+        .select("_id username fullName lastSeen")
+        .sort({ username: 1 })
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, users, "Users fetched successfully")
+        )
+})
+
 export {
     registerUser,
     loginUser,
@@ -325,5 +338,6 @@ export {
     refreshAccessToken,
     getCurrentUser,
     updateUserDetails,
-    updatePassword
+    updatePassword,
+    getAllUsers
 }

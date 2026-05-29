@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
         lowercase: true,
-        trime: true,
+        trim: true,
         index: true
     },
 
@@ -44,6 +44,11 @@ const userSchema = new mongoose.Schema({
 
     refreshToken: {
         type: String
+    },
+
+    lastSeen: {
+        type: Date,
+        default: null
     }
 }, { timestamps: true })
 

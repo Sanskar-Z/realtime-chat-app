@@ -69,37 +69,60 @@ const ChatInput = ({ activeUser, onSend }) => {
 
   const send = (e) => {
     e.preventDefault();
+
     if (!text.trim() || !socket.connected || !activeUser) return;
-    socket.emit("private-message", { toUserId: activeUser, message: text });
+
+    socket.emit("private-message", {
+      toUserId: activeUser,
+      message: text,
+    });
+
     setText("");
   };
 
   return (
-    <footer className="p-4 bg-white border-t border-gray-100">
+    <footer className="border-t border-gray-200 bg-white px-3 py-2">
       <form
         onSubmit={send}
-        className="flex items-center gap-3 bg-gray-100 rounded-full px-4 py-2 shadow-inner"
+        className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 focus-within:border-blue-300"
       >
-        <button type="button" className="text-gray-400 hover:text-blue-500 transition">
-          <FiPaperclip size={20} />
+        {/* Attachment */}
+        <button
+          type="button"
+          className="text-gray-500 transition hover:text-blue-500"
+        >
+          <FiPaperclip size={18} />
         </button>
-        <button type="button" className="text-gray-400 hover:text-blue-500 transition">
-          <FiSmile size={20} />
+
+        {/* Emoji */}
+        <button
+          type="button"
+          className="text-gray-500 transition hover:text-yellow-500"
+        >
+          <FiSmile size={18} />
         </button>
+
+        {/* Input */}
         <input
           type="text"
           value={text}
           disabled={!activeUser}
           onChange={(e) => setText(e.target.value)}
-          placeholder={activeUser ? "Type a message..." : "Select a user to start chatting"}
-          className="flex-1 bg-transparent outline-none text-sm"
+          placeholder={
+            activeUser
+              ? "Type a message..."
+              : "Select a user to start chatting"
+          }
+          className="flex-1 bg-transparent text-sm text-gray-700 placeholder:text-gray-400 outline-none"
         />
+
+        {/* Send */}
         <button
           type="submit"
           disabled={!text.trim()}
-          className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full transition disabled:opacity-40"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white transition hover:bg-blue-600 disabled:opacity-40"
         >
-          <FiSend size={18} />
+          <FiSend size={15} />
         </button>
       </form>
     </footer>
@@ -182,6 +205,7 @@ const Chat = () => {
   if (!user) return <Navigate to="/login" replace />;
 
   const activeUserObj = onlineUsers.find((u) => u.userId === activeUser);
+  const isActiveUserOnline = Boolean(activeUserObj);
 
   return (
     <main className="flex h-screen bg-gray-100">
@@ -204,7 +228,9 @@ const Chat = () => {
               </span>
               <div className="ml-4">
                 <h2 className="font-bold text-lg">{activeUserObj?.username || "User"}</h2>
-                <p className="text-xs text-green-500">Online</p>
+                <p className={`text-xs ${isActiveUserOnline ? "text-green-500" : "text-gray-400"}`}>
+                  {isActiveUserOnline ? "Online" : "Offline"}
+                </p>
               </div>
             </header>
 
