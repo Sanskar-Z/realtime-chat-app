@@ -39,7 +39,6 @@ export const getCurrentUser = async () => {
         const response = await api.get("/users/current-user");
         return response.data.data;
     } catch (error) {
-        console.warn("Auth check failed");
         throw error;
     }
 };
@@ -85,7 +84,6 @@ export const refreshAccessToken = async () => {
         const response = await api.post("/users/refresh-token");
         return response.data;
     } catch (error) {
-        alert(error.response?.data.message);
         throw error;
     }
 }
