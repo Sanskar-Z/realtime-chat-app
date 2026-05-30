@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { BsFillPersonFill } from "react-icons/bs";
 import api from "../services/api";
+import socket from "../socket/socket";
 
 // Formats lastSeen into a human-readable string like "5 min ago"
 const formatLastSeen = (date) => {
@@ -22,6 +23,7 @@ const ConversationList = ({
   const [allUsers, setAllUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [fetchError, setFetchError] = useState(false);
+  const [typingUser, setTypingUser] = useState(null);
 
   // Fetch all registered users once on mount
   useEffect(() => {
@@ -29,6 +31,16 @@ const ConversationList = ({
       .then((res) => setAllUsers(res.data.data || []))
       .catch(() => setFetchError(true));
   }, []);
+
+  // Typing indicator
+  useEffect(() => {
+    socket.on("typing-start", ({ fromUserId, isTyping }) => {
+      setTypingUser({ fromUserId, isTyping });
+    })
+    socket.on("typing-stop", ({ fromUserId, isTyping }) => {
+      setTypingUser({ fromUserId, isTyping });
+    })
+  }, [])
 
   // Build a Set of online userIds for O(1) lookup
   const onlineSet = new Set(onlineUsers.map((u) => u.userId));
@@ -104,12 +116,24 @@ const ConversationList = ({
                   />
                 </div>
 
-                {/* Name + status */}
+                {/* Name + status + typing*/}
                 <div className="ml-4 flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-800 truncate">{user.username}</h3>
-                  <p className={`text-xs truncate ${isOnline ? "text-green-500" : "text-gray-400"}`}>
-                    {isOnline ? "Online" : formatLastSeen(user.lastSeen)}
-                  </p>
+
+                  {typingUser?.fromUserId === user._id && typingUser?.isTyping ? (
+                    <p className="text-xs text-blue-400 flex items-center gap-1">
+                      <span>typing</span>
+                      <span className="flex gap-0.5 items-end">
+                        <span className="w-1 h-1 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <span className="w-1 h-1 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <span className="w-1 h-1 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+                      </span>
+                    </p>
+                  ) : (
+                    <p className={`text-xs truncate ${isOnline ? "text-green-500" : "text-gray-400"}`}>
+                      {isOnline ? "Online" : formatLastSeen(user.lastSeen)}
+                    </p>
+                  )}
                 </div>
               </div>
             );

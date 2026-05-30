@@ -11,7 +11,6 @@ import { FiSend, FiPaperclip, FiSmile } from "react-icons/fi";
 import { ThreeDot } from "react-loading-indicators";
 import chatIcon from "../images/ChatAPP.png";
 
-
 // ─── Message bubble ────────────────────────────────────────────────────────────
 const Message = ({ senderId, currentUserId, message, createdAt }) => {
   const isMe = senderId === currentUserId;
@@ -80,6 +79,24 @@ const ChatInput = ({ activeUser, onSend }) => {
     setText("");
   };
 
+  const TypingStart = () => {
+    if (!activeUser) return;
+    socket.emit("typing-start", {
+      toUserId: activeUser,
+      isTyping: true,
+    });
+    console.log("Typing started");
+  }
+
+  const TypingStop = () => {
+    if (!activeUser) return;
+    socket.emit("typing-stop", {
+      toUserId: activeUser,
+      isTyping: false,
+    });
+    console.log("Typing stoped");
+  }
+
   return (
     <footer className="border-t border-gray-200 bg-white px-3 py-2">
       <form
@@ -108,6 +125,8 @@ const ChatInput = ({ activeUser, onSend }) => {
           value={text}
           disabled={!activeUser}
           onChange={(e) => setText(e.target.value)}
+          onFocus={TypingStart}
+          onBlur={TypingStop}
           placeholder={
             activeUser
               ? "Type a message..."

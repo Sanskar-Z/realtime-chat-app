@@ -52,6 +52,27 @@ io.on("connection", (socket) => {
     socket.emit("online-users", getOnlineUsersList())
   })
 
+  // Typing indicators
+  socket.on("typing-start", ({ toUserId }) => {
+    const receiver = onlineUsers.get(toUserId);
+    if (receiver) {
+      io.to(receiver.socketId).emit("typing-start", {
+        fromUserId: socket.userId,
+        isTyping: true,
+      })
+    }
+  })
+
+  socket.on("typing-stop", ({ toUserId }) => {
+    const receiver = onlineUsers.get(toUserId);
+    if (receiver) {
+      io.to(receiver.socketId).emit("typing-stop", {
+        fromUserId: socket.userId,
+        isTyping: false,
+      })
+    }
+  })
+
   socket.on("private-message", async ({ toUserId, message }) => {
     if (!message?.trim()) return
 
