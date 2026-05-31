@@ -69,7 +69,7 @@ const ChatInput = ({ activeUser }) => {
 
   const emitTypingStop = () => {
     if (!activeUser) return;
-    socket.emit("typing-stop", { toUserId: activeUser })
+    socket.emit("typing-stop", { toUserId: activeUser._id })
   };
 
   const handleChange = (e) => {
@@ -77,7 +77,7 @@ const ChatInput = ({ activeUser }) => {
 
     if (!activeUser || !socket.connected) return;
 
-    socket.emit("typing-start", { toUserId: activeUser })
+    socket.emit("typing-start", { toUserId: activeUser._id })
 
     clearTimeout(typingTimeoutRef.current);
 
@@ -90,14 +90,16 @@ const ChatInput = ({ activeUser }) => {
     }
   };
 
-  const send = () => {
+  const send = (e) => {
+    e?.preventDefault();
+
     if (!text.trim() || !socket.connected || !activeUser) return;
 
     clearTimeout(typingTimeoutRef.current);
     emitTypingStop();
 
     socket.emit("private-message", {
-      toUserId: activeUser,
+      toUserId: activeUser._id,
       message: text,
     });
 
@@ -170,6 +172,15 @@ const Chat = () => {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(true);
 
+  const formatLastSeen = (date) => {
+    if (!date) return "Offline";
+    const diff = Math.floor((Date.now() - new Date(date)) / 1000);
+    if (diff < 60) return "Just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
+    return `${Math.floor(diff / 86400)} days ago`;
+  };
+
   // Online users list
   useEffect(() => {
     const handle = (users) => { setOnlineUsers(users); setUsersLoading(false); };
@@ -195,7 +206,7 @@ const Chat = () => {
 
   // Acknowledgement for messages we sent (avoids echoing via private-message)
   useEffect(() => {
-    const handle = (msg) => { if (activeUser) addMessage(activeUser, msg); };
+    const handle = (msg) => { if (activeUser?._id) addMessage(activeUser._id, msg); };
     socket.on("message-sent", handle);
     return () => socket.off("message-sent", handle);
   }, [activeUser]);
@@ -204,15 +215,15 @@ const Chat = () => {
   useEffect(() => {
     if (!activeUser) return;
 
-    fetchPrivateMessages(activeUser)
+    fetchPrivateMessages(activeUser?._id)
       .then((data) => {
         const history = Array.isArray(data) ? data : [];
         setMessages((prev) => {
           // Merge: keep socket messages already in state, deduplicate by _id
-          const existing = prev[activeUser] || [];
+          const existing = prev[activeUser?._id] || [];
           const seen = new Set(existing.map((m) => m._id?.toString()));
           const fresh = history.filter((m) => !seen.has(m._id?.toString()));
-          return { ...prev, [activeUser]: [...fresh, ...existing] };
+          return { ...prev, [activeUser._id]: [...fresh, ...existing] };
         });
       })
       .catch((err) => console.error("Failed to load messages:", err));
@@ -220,10 +231,10 @@ const Chat = () => {
 
   useEffect(() => {
     const onStart = ({ fromUserId }) => {
-      if (fromUserId === activeUser) setIsTyping(true);
+      if (fromUserId === activeUser?._id) setIsTyping(true);
     };
     const onStop = ({ fromUserId }) => {
-      if (fromUserId === activeUser) setIsTyping(false);
+      if (fromUserId === activeUser?._id) setIsTyping(false);
     };
 
     socket.on("typing-start", onStart);
@@ -253,8 +264,8 @@ const Chat = () => {
 
   if (!user) return <Navigate to="/login" replace />;
 
-  const activeUserObj = onlineUsers.find((u) => u.userId === activeUser);
-  const isActiveUserOnline = Boolean(activeUserObj);
+  const activeUserObj = onlineUsers.find((u) => u.userId === activeUser?._id);
+  const isActiveUserOnline = activeUserObj !== undefined;
 
   return (
     <main className="flex h-screen bg-gray-100">
@@ -276,7 +287,7 @@ const Chat = () => {
                 <BsFillPersonFill />
               </span>
               <div className="ml-4">
-                <h2 className="font-bold text-lg">{activeUserObj?.username || "User"}</h2>
+                <h2 className="font-bold text-lg">{activeUser?.username || "User"}</h2>
                 {isTyping ? (
                   <p className="text-xs text-blue-400 flex items-center gap-1">
                     <span>typing</span>
@@ -288,13 +299,13 @@ const Chat = () => {
                   </p>
                 ) : (
                   <p className={`text-xs ${isActiveUserOnline ? "text-green-500" : "text-gray-400"}`}>
-                    {isActiveUserOnline ? "Online" : "Offline"}
+                    {isActiveUserOnline ? "Online" : formatLastSeen(activeUser.lastSeen)}
                   </p>
                 )}
               </div>
             </header>
 
-            <ChatBox messages={messages[activeUser] || []} currentUserId={user._id} />
+            <ChatBox messages={messages[activeUser?._id] || []} currentUserId={user._id} />
 
             <ChatInput activeUser={activeUser} />
           </>

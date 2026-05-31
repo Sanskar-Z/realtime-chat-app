@@ -101,7 +101,7 @@ const ConversationList = ({
             return (
               <div
                 key={user._id}
-                onClick={() => onSelectUser(user._id)}
+                onClick={() => onSelectUser(user)}
                 className={`flex items-center px-6 py-4 cursor-pointer transition-colors
                   ${activeUser === user._id
                     ? "bg-blue-50 border-r-4 border-blue-500"
