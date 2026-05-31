@@ -34,13 +34,17 @@ const ConversationList = ({
 
   // Typing indicator
   useEffect(() => {
-    socket.on("typing-start", ({ fromUserId, isTyping }) => {
-      setTypingUser({ fromUserId, isTyping });
-    })
-    socket.on("typing-stop", ({ fromUserId, isTyping }) => {
-      setTypingUser({ fromUserId, isTyping });
-    })
-  }, [])
+    const onStart = ({ fromUserId }) => setTypingUser({ fromUserId, isTyping: true });
+    const onStop = ({ fromUserId }) => setTypingUser({ fromUserId, isTyping: false });
+
+    socket.on("typing-start", onStart);
+    socket.on("typing-stop", onStop);
+
+    return () => {
+      socket.off("typing-start", onStart);
+      socket.off("typing-stop", onStop);
+    };
+  }, []);
 
   // Build a Set of online userIds for O(1) lookup
   const onlineSet = new Set(onlineUsers.map((u) => u.userId));

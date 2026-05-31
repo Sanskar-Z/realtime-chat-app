@@ -58,7 +58,6 @@ io.on("connection", (socket) => {
     if (receiver) {
       io.to(receiver.socketId).emit("typing-start", {
         fromUserId: socket.userId,
-        isTyping: true,
       })
     }
   })
@@ -68,7 +67,6 @@ io.on("connection", (socket) => {
     if (receiver) {
       io.to(receiver.socketId).emit("typing-stop", {
         fromUserId: socket.userId,
-        isTyping: false,
       })
     }
   })

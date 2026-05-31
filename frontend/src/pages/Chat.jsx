@@ -63,13 +63,38 @@ const ChatBox = ({ messages, currentUserId }) => {
 };
 
 // ─── Input bar ─────────────────────────────────────────────────────────────────
-const ChatInput = ({ activeUser, onSend }) => {
+const ChatInput = ({ activeUser }) => {
   const [text, setText] = useState("");
+  const typingTimeoutRef = useRef(null);
 
-  const send = (e) => {
-    e.preventDefault();
+  const emitTypingStop = () => {
+    if (!activeUser) return;
+    socket.emit("typing-stop", { toUserId: activeUser })
+  };
 
+  const handleChange = (e) => {
+    setText(e.target.value);
+
+    if (!activeUser || !socket.connected) return;
+
+    socket.emit("typing-start", { toUserId: activeUser })
+
+    clearTimeout(typingTimeoutRef.current);
+
+    typingTimeoutRef.current = setTimeout(emitTypingStop, 2000);
+  }
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  };
+
+  const send = () => {
     if (!text.trim() || !socket.connected || !activeUser) return;
+
+    clearTimeout(typingTimeoutRef.current);
+    emitTypingStop();
 
     socket.emit("private-message", {
       toUserId: activeUser,
@@ -79,23 +104,11 @@ const ChatInput = ({ activeUser, onSend }) => {
     setText("");
   };
 
-  const TypingStart = () => {
-    if (!activeUser) return;
-    socket.emit("typing-start", {
-      toUserId: activeUser,
-      isTyping: true,
-    });
-    console.log("Typing started");
-  }
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => clearTimeout(typingTimeoutRef.current);
+  }, []);
 
-  const TypingStop = () => {
-    if (!activeUser) return;
-    socket.emit("typing-stop", {
-      toUserId: activeUser,
-      isTyping: false,
-    });
-    console.log("Typing stoped");
-  }
 
   return (
     <footer className="border-t border-gray-200 bg-white px-3 py-2">
@@ -124,9 +137,8 @@ const ChatInput = ({ activeUser, onSend }) => {
           type="text"
           value={text}
           disabled={!activeUser}
-          onChange={(e) => setText(e.target.value)}
-          onFocus={TypingStart}
-          onBlur={TypingStop}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
           placeholder={
             activeUser
               ? "Type a message..."
@@ -151,6 +163,7 @@ const ChatInput = ({ activeUser, onSend }) => {
 // ─── Main Chat page ────────────────────────────────────────────────────────────
 const Chat = () => {
   const { user, loading } = useAuth();
+  const [isTyping, setIsTyping] = useState(false);
 
   const [messages, setMessages] = useState({});  // { userId: Message[] }
   const [activeUser, setActiveUser] = useState(null);
@@ -205,6 +218,23 @@ const Chat = () => {
       .catch((err) => console.error("Failed to load messages:", err));
   }, [activeUser]);
 
+  useEffect(() => {
+    const onStart = ({ fromUserId }) => {
+      if (fromUserId === activeUser) setIsTyping(true);
+    };
+    const onStop = ({ fromUserId }) => {
+      if (fromUserId === activeUser) setIsTyping(false);
+    };
+
+    socket.on("typing-start", onStart);
+    socket.on("typing-stop", onStop);
+    return () => {
+      socket.off("typing-start", onStart);
+      socket.off("typing-stop", onStop);
+      setIsTyping(false); // reset when switching conversations
+    };
+  }, [activeUser]);
+
   // Helper: append a message, deduplicating by _id
   const addMessage = (userId, msg) => {
     setMessages((prev) => {
@@ -247,9 +277,20 @@ const Chat = () => {
               </span>
               <div className="ml-4">
                 <h2 className="font-bold text-lg">{activeUserObj?.username || "User"}</h2>
-                <p className={`text-xs ${isActiveUserOnline ? "text-green-500" : "text-gray-400"}`}>
-                  {isActiveUserOnline ? "Online" : "Offline"}
-                </p>
+                {isTyping ? (
+                  <p className="text-xs text-blue-400 flex items-center gap-1">
+                    <span>typing</span>
+                    <span className="flex gap-0.5 items-end">
+                      <span className="w-1 h-1 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="w-1 h-1 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="w-1 h-1 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </span>
+                  </p>
+                ) : (
+                  <p className={`text-xs ${isActiveUserOnline ? "text-green-500" : "text-gray-400"}`}>
+                    {isActiveUserOnline ? "Online" : "Offline"}
+                  </p>
+                )}
               </div>
             </header>
 
