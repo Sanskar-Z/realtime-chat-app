@@ -6,13 +6,13 @@ import Sidebar from "../components/Sidebar";
 import ConversationList from "../components/ConversationList";
 import { fetchPrivateMessages } from "../services/messageService";
 import { useAuth } from "../context/useAuth";
-import { BsFillPersonFill } from "react-icons/bs";
+import { BsFillPersonFill, BsCheck2, BsCheck2All } from "react-icons/bs";
 import { FiSend, FiPaperclip, FiSmile } from "react-icons/fi";
 import { ThreeDot } from "react-loading-indicators";
-import chatIcon from "../images/ChatAPP.png";
+import chatIcon from "../images/SwiftChat.png";
 
 // ─── Message bubble ────────────────────────────────────────────────────────────
-const Message = ({ senderId, currentUserId, message, createdAt }) => {
+const Message = ({ senderId, currentUserId, message, createdAt, read }) => {
   const isMe = senderId === currentUserId;
   return (
     <div className={`flex ${isMe ? "justify-end" : "justify-start"} animate-fadeIn`}>
@@ -24,8 +24,13 @@ const Message = ({ senderId, currentUserId, message, createdAt }) => {
           }`}
       >
         <p className="whitespace-pre-wrap leading-relaxed">{message}</p>
-        <div className={`text-[10px] mt-1 ${isMe ? "text-blue-100 text-right" : "text-gray-400"}`}>
+        <div className={`text-[10px] mt-1 flex items-center ${isMe ? "text-blue-100 text-right" : "text-gray-400"}`}>
           {new Date(createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          {isMe && (
+            read
+              ? <BsCheck2All size={13} className="text-white opacity-90" title="Read" />
+              : <BsCheck2 size={13} className="text-blue-200" title="Sent" />
+          )}
         </div>
       </div>
     </div>
@@ -54,6 +59,7 @@ const ChatBox = ({ messages, currentUserId }) => {
             currentUserId={currentUserId}
             message={msg.message}
             createdAt={msg.createdAt}
+            read={msg.read}
           />
         )
       )}
@@ -229,6 +235,29 @@ const Chat = () => {
       .catch((err) => console.error("Failed to load messages:", err));
   }, [activeUser]);
 
+
+  //When receiver opens a conversation — emit message-read to backend
+  useEffect(() => {
+    if (!activeUser?._id) return;
+    socket.emit("message-read", { fromUserId: activeUser?._id })
+  }, [activeUser])
+
+
+  useEffect(() => {
+    const handle = ({ byUserId }) => {
+      setMessages((prev) => {
+        const convo = prev[byUserId]
+        if (!convo) return prev
+        return {
+          ...prev,
+          [byUserId]: convo.map((m) => ({ ...m, read: true }))
+        }
+      })
+    }
+    socket.on("messages-read", handle)
+    return () => socket.off("messages-read", handle)
+  }, [])
+
   useEffect(() => {
     const onStart = ({ fromUserId }) => {
       if (fromUserId === activeUser?._id) setIsTyping(true);
@@ -282,7 +311,7 @@ const Chat = () => {
       <section className="flex-1 flex flex-col bg-gray-50">
         {activeUser ? (
           <>
-            <header className="h-20 bg-white border-b border-gray-100 flex items-center px-8">
+            <header className="h-20 bg-white border-b border-gray-100 flex items-center px-8 select-none">
               <span className="bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center">
                 <BsFillPersonFill />
               </span>

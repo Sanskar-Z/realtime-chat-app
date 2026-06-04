@@ -18,6 +18,18 @@ const messageSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-}, {timestamps: true})
+
+    read: {
+        type: Boolean,
+        default: false     // false = single tick, true = double tick
+    },
+
+    createdAt: {
+        type: Date,
+        default: Date.now,
+        index: { expires: '20d' }  // MongoDB auto-deletes after 30 days
+    }
+
+}, { timestamps: true })
 
 export const Message = mongoose.model("Message", messageSchema);

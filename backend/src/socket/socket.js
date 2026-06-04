@@ -71,6 +71,24 @@ io.on("connection", (socket) => {
     }
   })
 
+  socket.on("message-read", async ({ fromUserId }) => {
+    try {
+      // Mark all messages from fromUserId to this user as read
+      await Message.updateMany(
+        { sender: fromUserId, receiver: socket.userId, read: false },
+        { $set: { read: true } }
+      )
+
+      // Notify the original sender their messages were read
+      const sender = onlineUsers.get(fromUserId)
+      if (sender) {
+        io.to(sender.socketId).emit("messages-read", { byUserId: socket.userId })
+      }
+    } catch (err) {
+      console.error("message-read error:", err)
+    }
+  })
+
   socket.on("private-message", async ({ toUserId, message }) => {
     if (!message?.trim()) return
 
@@ -87,6 +105,7 @@ io.on("connection", (socket) => {
         receiverId: toUserId,
         message: savedMessage.message,
         createdAt: savedMessage.createdAt,
+        read: false,
       }
 
       // Deliver to receiver if they are online

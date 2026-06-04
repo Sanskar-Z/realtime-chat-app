@@ -2,7 +2,7 @@ import { useState } from "react";
 import { registerUser } from "../services/authService";
 import { NavLink, useNavigate } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import logo from "../images/ChatAPP.png";
+import logo from "../images/SwiftChat.png";
 
 const RegisterUser = () => {
   const [fullName, setFullName] = useState("");

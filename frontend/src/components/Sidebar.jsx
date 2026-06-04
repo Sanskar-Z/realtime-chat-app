@@ -1,6 +1,6 @@
 import { IoLogOutOutline, IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineMessage } from "react-icons/md";
-import chatIcon from "../images/ChatAPP.png";
+import chatIcon from "../images/SwiftChat.png";
 import { logoutUser } from "../services/authService";
 import { useAuth } from "../context/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +34,7 @@ const Sidebar = () => {
 
       {/* Logo */}
       <div className="w-12 h-12 flex items-center justify-center rounded-xl">
-        <img src={chatIcon} alt="ChatApp Logo" className="w-10 h-10 object-contain" />
+        <img src={chatIcon} alt="SwiftChat Logo" className="w-10 h-10 object-contain" />
       </div>
 
       {/* Menu */}

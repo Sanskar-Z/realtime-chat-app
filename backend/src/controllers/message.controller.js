@@ -13,6 +13,15 @@ export const getPrivateMessages = asyncHandler(async (req, res) => {
         ],
     }).sort({ createdAt: 1 });
 
+    await Message.updateMany(
+        {
+            sender: otherUserId, receiver: userId, read: false
+        },
+        {
+            $set: { read: true }
+        }
+    )
+
     res.status(200).json(
         messages.map((msg) => ({
             _id: msg._id,
@@ -20,6 +29,7 @@ export const getPrivateMessages = asyncHandler(async (req, res) => {
             receiverId: msg.receiver,
             message: msg.message,
             createdAt: msg.createdAt,
+            read: msg.read,
         }))
     );
 });

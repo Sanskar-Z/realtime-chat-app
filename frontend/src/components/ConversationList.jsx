@@ -65,7 +65,7 @@ const ConversationList = ({
     });
 
   return (
-    <section className="w-80 md:w-96 bg-white flex flex-col border-r border-gray-100">
+    <section className="w-80 md:w-96 bg-white flex flex-col border-r border-gray-100 select-none">
 
       {/* Header */}
       <div className="p-6 pb-3">
