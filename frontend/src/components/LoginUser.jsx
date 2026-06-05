@@ -89,12 +89,6 @@ const LoginUser = () => {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-sm font-medium text-gray-700">Password</label>
-                <button
-                  type="button"
-                  className="text-xs font-medium text-blue-500 hover:text-blue-600 transition"
-                >
-                  Forgot password?
-                </button>
               </div>
               <div className="relative">
                 <input

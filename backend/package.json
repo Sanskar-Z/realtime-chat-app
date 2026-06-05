@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "realtime-chat-app using websocket",
+  "description": "swiftchat using websocket",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Sanskar-Z/realtime-chat-app.git"
+    "url": "git+https://github.com/Sanskar-Z/swiftchat.git"
   },
   "author": "Sanskar Zine",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Sanskar-Z/realtime-chat-app/issues"
+    "url": "https://github.com/Sanskar-Z/swiftchat/issues"
   },
-  "homepage": "https://github.com/Sanskar-Z/realtime-chat-app#readme",
+  "homepage": "https://github.com/Sanskar-Z/swiftchat#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
