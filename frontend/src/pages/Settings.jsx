@@ -22,7 +22,7 @@ const Settings = () => {
           </header>
 
           {/* Profile photo section */}
-          <ProfilePhoto />
+          {/* <ProfilePhoto /> */}
 
           {/* Settings form */}
           <SettingsForm />

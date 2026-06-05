@@ -1,15 +1,30 @@
-# Realtime Chat App
+<p align="center">
+  <img src="./frontend/src/images/SwiftChat.png" width="80" alt="SwiftChat logo" />
+</p>
 
-A full-stack real-time private messaging app built with React, Node.js, Socket.IO, and MongoDB. Users can register, log in, see who is online, and exchange private messages that are persisted to the database.
+<h1 align="center">SwiftChat</h1>
+
+<p align="center">
+  Real-time private messaging — fast, simple, instant
+</p>
+
+<p align="center">
+  <!-- <a href="https://swiftchat.vercel.app">🔗 Live Demo</a> &nbsp;·&nbsp; -->
+  <a href="#getting-started">Getting Started</a> &nbsp;·&nbsp;
+  <a href="#api-routes">API Routes</a>
+</p>
 
 ---
 
 ## Features
 
 - **Real-time messaging** — instant private messages via Socket.IO WebSockets
+- **Typing indicators** — see when the other person is typing in real time
+- **Read receipts** — single tick ✓ (sent) and double tick ✓✓ (read) on every message
 - **Online presence** — live online/offline status with last seen timestamps
 - **User search** — search all registered users by name or username
 - **Persistent history** — all messages saved to MongoDB, loaded on conversation open
+- **Message TTL** — messages auto-deleted after 20 days
 - **JWT authentication** — secure login with access + refresh token rotation via httpOnly cookies
 - **Protected routes** — unauthenticated users are redirected to login
 - **Settings** — update profile details and change password
@@ -22,7 +37,7 @@ A full-stack real-time private messaging app built with React, Node.js, Socket.I
 |---|---|
 | Frontend | React 19, Tailwind CSS, React Router, Socket.IO client |
 | Backend | Node.js, Express 5, Socket.IO, Mongoose |
-| Database | MongoDB (Atlas or local) |
+| Database | MongoDB Atlas |
 | Auth | JWT (access + refresh tokens), bcrypt, httpOnly cookies |
 | Dev | Vite, Nodemon |
 
@@ -31,7 +46,7 @@ A full-stack real-time private messaging app built with React, Node.js, Socket.I
 ## Project structure
 
 ```
-realtime-chat-app/
+swiftchat/
 ├── backend/
 │   └── src/
 │       ├── controllers/     # request handlers
@@ -39,7 +54,7 @@ realtime-chat-app/
 │       ├── middlewares/     # JWT auth middleware
 │       ├── models/          # Mongoose schemas
 │       ├── routes/          # Express routers
-│       ├── socket/          # Socket.IO server
+│       ├── socket/          # Socket.IO server + event handlers
 │       ├── utils/           # ApiError, ApiResponse, asyncHandler
 │       ├── app.js           # Express app setup
 │       └── server.js        # Entry point
@@ -59,15 +74,15 @@ realtime-chat-app/
 ### Prerequisites
 
 - Node.js 18+
-- MongoDB Atlas account (free tier) or MongoDB running locally
+- MongoDB Atlas account (free tier)
 
 ---
 
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/Sanskar-Z/realtime-chat-app.git
-cd realtime-chat-app
+git clone https://github.com/Sanskar-Z/swiftchat.git
+cd swiftchat
 ```
 
 ---
@@ -85,15 +100,15 @@ Create a `.env` file in the `backend/` directory:
 cp .env.example .env
 ```
 
-Fill in the values in `.env`:
+Fill in the values:
 
 ```env
 PORT=8001
 NODE_ENV=development
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/realtime-chat-app
-ACCESS_TOKEN_SECRET=<generate with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))">
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/swiftchat
+ACCESS_TOKEN_SECRET=<run: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))">
 ACCESS_TOKEN_EXPIRY=15m
-REFRESH_TOKEN_SECRET=<generate a different secret the same way>
+REFRESH_TOKEN_SECRET=<run the same command again for a different secret>
 REFRESH_TOKEN_EXPIRY=7d
 CORS_ORIGIN=http://localhost:5173
 ```
@@ -104,7 +119,7 @@ Start the backend:
 npm run dev
 ```
 
-The server runs at `http://localhost:8001`.
+Server runs at `http://localhost:8001`.
 
 ---
 
@@ -124,9 +139,11 @@ cp .env.example .env
 Fill in the values:
 
 ```env
-VITE_API_URL=http://localhost:8001/api/v1
+VITE_API_URL=/api/v1
 VITE_SOCKET_URL=http://localhost:8001
 ```
+
+> The frontend proxies all `/api` requests to the backend via Vite, so cookies work correctly in development without any CORS issues.
 
 Start the frontend:
 
@@ -134,13 +151,13 @@ Start the frontend:
 npm run dev
 ```
 
-The app runs at `http://localhost:5173`.
+App runs at `http://localhost:5173`.
 
 ---
 
 ### 4. Open the app
 
-Go to `http://localhost:5173` in your browser. Register two accounts in separate tabs to test real-time messaging between them.
+Go to `http://localhost:5173`. Register two accounts in separate browser tabs to test real-time messaging between them.
 
 ---
 
@@ -150,10 +167,25 @@ Go to `http://localhost:5173` in your browser. Register two accounts in separate
 
 1. User types a message and hits send
 2. Frontend emits a `private-message` socket event to the backend
-3. Backend saves the message to MongoDB, builds a payload with `_id` and timestamps
+3. Backend saves the message to MongoDB and builds a payload with `_id` and timestamps
 4. Backend emits `private-message` to the **receiver's** socket
-5. Backend emits `message-sent` back to the **sender** (separate event to avoid duplicates)
+5. Backend emits `message-sent` back to the **sender** (separate event — avoids duplicates)
 6. Both sides append the message to local React state, deduplicated by `_id`
+
+### Typing indicators
+
+1. Sender emits `typing-start` on every keystroke
+2. A 2-second debounce timer fires `typing-stop` after the user pauses
+3. Backend relays the event to the receiver only — no DB involved
+4. Receiver sees "typing…" in the chat header, clears when stop fires or conversation switches
+
+### Read receipts
+
+1. Every message is saved with `read: false`
+2. When a conversation is opened, the receiver emits `message-read` to the backend
+3. Backend marks all unread messages as `read: true` in MongoDB
+4. Backend emits `messages-read` to the original sender
+5. Sender's message bubbles update from ✓ to ✓✓ in real time
 
 ### Authentication flow
 
@@ -173,20 +205,20 @@ Go to `http://localhost:5173` in your browser. Register two accounts in separate
 
 ## API routes
 
-### Auth (`/api/v1/users`)
+### Auth — `/api/v1/users`
 
 | Method | Route | Auth | Description |
 |---|---|---|---|
 | POST | `/register` | No | Create a new account |
-| POST | `/login` | No | Login and get tokens |
+| POST | `/login` | No | Login and receive tokens |
 | POST | `/logout` | Yes | Logout and clear cookies |
 | POST | `/refresh-token` | No | Refresh access token |
-| GET | `/current-user` | Yes | Get logged-in user |
+| GET | `/current-user` | Yes | Get the logged-in user |
 | GET | `/` | Yes | Get all users |
 | PATCH | `/update-user` | Yes | Update profile details |
 | PATCH | `/update-password` | Yes | Change password |
 
-### Messages (`/api/v1/messages`)
+### Messages — `/api/v1/messages`
 
 | Method | Route | Auth | Description |
 |---|---|---|---|
@@ -194,7 +226,7 @@ Go to `http://localhost:5173` in your browser. Register two accounts in separate
 
 ---
 
-## Environment variables reference
+## Environment variables
 
 ### Backend
 
@@ -202,18 +234,28 @@ Go to `http://localhost:5173` in your browser. Register two accounts in separate
 |---|---|
 | `PORT` | Port the server runs on (default: 8001) |
 | `NODE_ENV` | `development` or `production` |
-| `MONGODB_URI` | MongoDB connection string |
+| `MONGODB_URI` | MongoDB Atlas connection string |
 | `ACCESS_TOKEN_SECRET` | Secret for signing access JWTs |
-| `ACCESS_TOKEN_EXPIRY` | Access token expiry (e.g. `15m`) |
+| `ACCESS_TOKEN_EXPIRY` | Access token expiry e.g. `15m` |
 | `REFRESH_TOKEN_SECRET` | Secret for signing refresh JWTs |
-| `REFRESH_TOKEN_EXPIRY` | Refresh token expiry (e.g. `7d`) |
+| `REFRESH_TOKEN_EXPIRY` | Refresh token expiry e.g. `7d` |
 | `CORS_ORIGIN` | Frontend origin allowed by CORS |
 
 ### Frontend
 
 | Variable | Description |
 |---|---|
-| `VITE_API_URL` | Backend REST API base URL |
+| `VITE_API_URL` | Backend REST API base URL (use `/api/v1` with Vite proxy) |
 | `VITE_SOCKET_URL` | Backend Socket.IO server URL |
 
 ---
+
+## Author
+
+**Sanskar Zine** — [github.com/Sanskar-Z](https://github.com/Sanskar-Z)
+
+---
+
+## License
+
+MIT — free to use, modify, and distribute.
