@@ -1,10 +1,17 @@
 import api from "./api";
 
-// In-memory token storage — avoids cross-origin cookie issues
-let accessToken = null;
+// Token storage — persists across page refreshes
+const TOKEN_KEY = "swiftchat_access_token";
 
-export const getAccessToken = () => accessToken;
-export const setAccessToken = (token) => { accessToken = token; };
+export const getAccessToken = () => localStorage.getItem(TOKEN_KEY);
+
+export const setAccessToken = (token) => {
+    if (token) {
+        localStorage.setItem(TOKEN_KEY, token);
+    } else {
+        localStorage.removeItem(TOKEN_KEY);
+    }
+};
 
 export const registerUser = async (fullName, email, username, password) => {
     try {
@@ -29,8 +36,8 @@ export const loginUser = async (identifier, password) => {
             email: identifier,
             password,
         });
-        // Store access token in memory
-        accessToken = response.data.data.accessToken;
+        // Persist token so user stays logged in after refresh
+        setAccessToken(response.data.data.accessToken);
         alert(response.data.message);
         return response.data;
     } catch (error) {
@@ -51,7 +58,7 @@ export const getCurrentUser = async () => {
 export const logoutUser = async () => {
     try {
         const response = await api.post("/users/logout");
-        accessToken = null; // Clear token on logout
+        setAccessToken(null); // Clear token on logout
         alert(response.data.message);
     } catch (error) {
         alert(error.response?.data.message);
@@ -87,10 +94,11 @@ export const updatePassword = async (oldPassword, newPassword, confirmPassword) 
 export const refreshAccessToken = async () => {
     try {
         const response = await api.post("/users/refresh-token");
-        // Update token in memory
-        accessToken = response.data.data.accessToken;
+        // Update persisted token
+        setAccessToken(response.data.data.accessToken);
         return response.data;
     } catch (error) {
+        setAccessToken(null); // Clear if refresh fails
         throw error;
     }
 };
