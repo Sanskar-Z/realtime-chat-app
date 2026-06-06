@@ -1,5 +1,11 @@
 import api from "./api";
 
+// In-memory token storage — avoids cross-origin cookie issues
+let accessToken = null;
+
+export const getAccessToken = () => accessToken;
+export const setAccessToken = (token) => { accessToken = token; };
+
 export const registerUser = async (fullName, email, username, password) => {
     try {
         const response = await api.post("/users/register", {
@@ -11,10 +17,7 @@ export const registerUser = async (fullName, email, username, password) => {
         alert(response.data.message);
         return response.data;
     } catch (error) {
-        console.error(
-            "Register error:",
-            error.response?.data || error.message
-        );
+        console.error("Register error:", error.response?.data || error.message);
         throw error;
     }
 };
@@ -26,6 +29,8 @@ export const loginUser = async (identifier, password) => {
             email: identifier,
             password,
         });
+        // Store access token in memory
+        accessToken = response.data.data.accessToken;
         alert(response.data.message);
         return response.data;
     } catch (error) {
@@ -46,6 +51,7 @@ export const getCurrentUser = async () => {
 export const logoutUser = async () => {
     try {
         const response = await api.post("/users/logout");
+        accessToken = null; // Clear token on logout
         alert(response.data.message);
     } catch (error) {
         alert(error.response?.data.message);
@@ -62,7 +68,6 @@ export const updateUserDetails = async (userData) => {
         throw error;
     }
 };
-
 
 export const updatePassword = async (oldPassword, newPassword, confirmPassword) => {
     try {
@@ -82,8 +87,10 @@ export const updatePassword = async (oldPassword, newPassword, confirmPassword) 
 export const refreshAccessToken = async () => {
     try {
         const response = await api.post("/users/refresh-token");
+        // Update token in memory
+        accessToken = response.data.data.accessToken;
         return response.data;
     } catch (error) {
         throw error;
     }
-}
+};
