@@ -3,6 +3,7 @@ import { Server } from 'socket.io'
 import { createServer } from 'http'
 import { Message } from '../models/message.model.js'
 import { User } from '../models/user.model.js'
+import { RoomMessage } from '../models/roomMessage.model.js'
 
 const server = createServer(app)
 
@@ -119,6 +120,48 @@ io.on("connection", (socket) => {
 
     } catch (err) {
       console.error("Private message error:", err)
+    }
+  })
+
+
+  // Group room ───────────────────────────────────────────────────────
+
+  // User joins a room
+  socket.on('join-room', (roomId) => {
+    socket.join(roomId);
+  })
+
+  // leave a socket.io room - called when user closes a room
+  socket.on("leave-room", (roomId) => {
+    socket.leave(roomId)
+  })
+
+  // send a message to a room
+
+  socket.on("room-message", async ({ roomId, message }) => {
+    if (!message?.trim()) return
+
+    try {
+      const savedMessage = await RoomMessage.create({
+        room: roomId,
+        sender: socket.userId,
+        message: message.trim()
+      })
+
+      const msgPayload = {
+        _id: savedMessage._id,
+        roomId,
+        senderId: String(socket.userId),
+        senderName: socket.username,
+        message: savedMessage.message,
+        createdAt: savedMessage.createdAt
+      }
+
+      // Broadcast to everyone in the room
+      io.to(roomId).emit("room-message", msgPayload)
+
+    } catch (err) {
+      console.log("Room message error:", err)
     }
   })
 

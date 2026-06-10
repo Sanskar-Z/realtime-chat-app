@@ -1,12 +1,13 @@
 import { IoLogOutOutline, IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineMessage } from "react-icons/md";
+import { BsPeopleFill } from "react-icons/bs";
 import chatIcon from "../images/SwiftChat.png";
 import { logoutUser } from "../services/authService";
 import { useAuth } from "../context/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
 import socket from "../socket/socket";
 
-const Sidebar = () => {
+const Sidebar = ({ mode, onModeChange }) => {
   const { setUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,8 +24,24 @@ const Sidebar = () => {
   };
 
   const menuItems = [
-    { icon: <MdOutlineMessage size={20} />, label: "Chat", path: "/", onClick: () => navigate("/") },
-    { icon: <IoSettingsOutline size={20} />, label: "Settings", path: "/settings", onClick: () => navigate("/settings") },
+    {
+      icon: <MdOutlineMessage size={20} />,
+      label: "Messages",
+      id: "dm",
+      onClick: () => { onModeChange("dm"); navigate("/"); }
+    },
+    {
+      icon: <BsPeopleFill size={18} />,
+      label: "Rooms",
+      id: "rooms",
+      onClick: () => { onModeChange("rooms"); navigate("/"); }
+    },
+    {
+      icon: <IoSettingsOutline size={20} />,
+      label: "Settings",
+      id: "settings",
+      onClick: () => navigate("/settings")
+    },
   ];
 
   return (
@@ -37,11 +54,13 @@ const Sidebar = () => {
 
       {/* Nav */}
       <nav className="flex flex-col items-center gap-1 flex-1">
-        {menuItems.map((item, index) => {
-          const isActive = location.pathname === item.path;
+        {menuItems.map((item) => {
+          const isActive = item.id === "settings"
+            ? location.pathname === "/settings"
+            : mode === item.id && location.pathname === "/";
           return (
             <button
-              key={index}
+              key={item.id}
               onClick={item.onClick}
               aria-label={item.label}
               title={item.label}

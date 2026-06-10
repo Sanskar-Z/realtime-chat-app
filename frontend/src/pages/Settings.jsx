@@ -1,13 +1,15 @@
 import Sidebar from "../components/Sidebar";
-import ProfilePhoto from "../components/ProfilePhoto";
 import SettingsForm from "../components/SettingsForm";
+import { useMode } from "../context/ModeContext";
+
 
 const Settings = () => {
+  const { mode, setMode } = useMode();
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
 
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar mode={mode} onModeChange={setMode} />
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto">
@@ -20,9 +22,6 @@ const Settings = () => {
               Update your profile information and preferences.
             </p>
           </header>
-
-          {/* Profile photo section */}
-          {/* <ProfilePhoto /> */}
 
           {/* Settings form */}
           <SettingsForm />

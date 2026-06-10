@@ -4,6 +4,7 @@ import LoginUser from "./components/LoginUser";
 import ProtectedRoute from "../routes/ProtectedRoute";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Settings from "./pages/Settings";
+import { ModeProvider } from "./context/ModeContext";
 
 function App() {
   const router = createBrowserRouter([
@@ -30,10 +31,14 @@ function App() {
           <Settings />
         </ProtectedRoute>
       )
-    }
+    },
   ]);
 
-  return <RouterProvider router={router} />;
+  return (
+    <ModeProvider>
+      <RouterProvider router={router} />
+    </ModeProvider>
+  );
 }
 
 export default App;

@@ -7,7 +7,6 @@ import cookieParser from 'cookie-parser'
 
 const app = express()
 
-
 app.use(cors({
   origin: process.env.CORS_ORIGIN,
   credentials: true,
@@ -26,6 +25,9 @@ app.use("/api/v1/users", userRouter)
 
 import messageRouter from "./routes/message.route.js"
 app.use("/api/v1/messages", messageRouter);
+
+import roomRouter from "./routes/room.routes.js"
+app.use("/api/v1/rooms", roomRouter)
 
 app.use((err, req, res, next) => {
   res.status(err.statusCode || 500).json({
