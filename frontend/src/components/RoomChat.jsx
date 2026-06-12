@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import socket from "../socket/socket"
 import api from "../services/api"
-import { BsPeopleFill } from "react-icons/bs"
+import { BsPeopleFill, BsBoxArrowRight } from "react-icons/bs"
 import { FiSend, FiSmile, FiPaperclip } from "react-icons/fi"
 
 // ─── Room message bubble ───────────────────────────────────────────────────────
@@ -11,7 +11,6 @@ const RoomMessage = ({ msg, currentUserId }) => {
     return (
         <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
             <div className={`max-w-[62%] ${!isMe ? "flex gap-2 items-end" : ""}`}>
-                {/* Avatar for others */}
                 {!isMe && (
                     <div className="w-7 h-7 rounded-full bg-purple-100 text-purple-600 text-xs font-semibold flex items-center justify-center flex-shrink-0 mb-1 select-none">
                         {(msg.senderName || "?")[0].toUpperCase()}
@@ -22,7 +21,7 @@ const RoomMessage = ({ msg, currentUserId }) => {
                         <p className="text-[11px] text-gray-400 font-medium ml-1 mb-0.5">{msg.senderName}</p>
                     )}
                     <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm
-            ${isMe
+                        ${isMe
                             ? "bg-blue-500 text-white rounded-br-sm shadow-blue-200"
                             : "bg-white text-gray-800 rounded-bl-sm border border-gray-100"
                         }`}
@@ -41,11 +40,25 @@ const RoomMessage = ({ msg, currentUserId }) => {
 }
 
 // ─── Room Chat ─────────────────────────────────────────────────────────────────
-const RoomChat = ({ activeRoom, currentUserId }) => {
+const RoomChat = ({ activeRoom, currentUserId, onLeave }) => {
     const [messages, setMessages] = useState([])
     const [text, setText] = useState("")
+    const [leaving, setLeaving] = useState(false)
     const bottomRef = useRef(null)
     const inputRef = useRef(null)
+
+    const handleLeave = async () => {
+        if (leaving) return
+        setLeaving(true)
+        try {
+            await api.post(`/rooms/${activeRoom._id}/leave`)
+            socket.emit("leave-room", activeRoom._id)
+            onLeave()
+        } catch (err) {
+            console.error("Failed to leave room:", err)
+            setLeaving(false)
+        }
+    }
 
     // Load history and join socket room
     useEffect(() => {
@@ -112,7 +125,7 @@ const RoomChat = ({ activeRoom, currentUserId }) => {
         <>
             {/* Header */}
             <header className="h-[65px] flex-shrink-0 bg-white border-b border-gray-100 flex items-center px-5 gap-3 select-none">
-                <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-base select-none flex-shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-base flex-shrink-0">
                     {activeRoom.name[0].toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -122,6 +135,16 @@ const RoomChat = ({ activeRoom, currentUserId }) => {
                     </p>
                 </div>
                 <BsPeopleFill size={16} className="text-gray-300 flex-shrink-0" />
+
+                {/* Leave button */}
+                <button
+                    onClick={handleLeave}
+                    disabled={leaving}
+                    title="Leave room"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-red-50 hover:text-red-400 transition-all duration-150 ml-1 disabled:opacity-50"
+                >
+                    <BsBoxArrowRight size={16} />
+                </button>
             </header>
 
             {/* Messages */}
@@ -176,7 +199,7 @@ const RoomChat = ({ activeRoom, currentUserId }) => {
                         type="submit"
                         disabled={!text.trim()}
                         className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150
-              ${text.trim()
+                            ${text.trim()
                                 ? "bg-blue-500 hover:bg-blue-600 text-white shadow-sm shadow-blue-200"
                                 : "bg-blue-100 text-blue-300 cursor-not-allowed"
                             }`}

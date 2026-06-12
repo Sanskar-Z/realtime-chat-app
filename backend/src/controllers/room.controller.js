@@ -68,9 +68,24 @@ const getRoomMessages = asyncHandler(async (req, res) => {
         )
 })
 
+const leaveRoom = asyncHandler(async (req, res) => {
+    const room = await Room.findById(req.params.roomId)
+    if (!room) throw new ApiError(404, "Room not found")
+
+    room.members = room.members.filter(
+        (id) => id.toString() !== req.user._id.toString()
+    )
+    await room.save()
+
+    return res.status(200).json(
+        new ApiResponse(200, {}, "Left room successfully")
+    )
+})
+
 export {
     createRoom,
     getRooms,
     joinRoom,
-    getRoomMessages
+    getRoomMessages,
+    leaveRoom
 }

@@ -8,7 +8,7 @@ import RoomList from "../components/RoomList";
 import RoomChat from "../components/RoomChat";
 import { fetchPrivateMessages } from "../services/messageService";
 import { useAuth } from "../context/useAuth";
-import { BsCheck2, BsCheck2All } from "react-icons/bs";
+import { BsCheck2, BsCheck2All, BsPersonFill } from "react-icons/bs";
 import { FiSend, FiPaperclip, FiSmile } from "react-icons/fi";
 import { ThreeDot } from "react-loading-indicators";
 import chatIcon from "../images/SwiftChat.png";
@@ -89,22 +89,36 @@ const ChatBox = ({ messages, currentUserId }) => {
 
   return (
     <div className="flex-1 overflow-y-auto px-6 py-5 space-y-2 chat-bg">
-      {messages.map((msg, index) =>
-        msg.type === "system" ? (
-          <DateDivider key={msg._id || index} label={msg.message} />
-        ) : (
-          <div key={msg._id || index} className="msg-enter">
-            <Message
-              senderId={msg.senderId || msg.sender}
-              currentUserId={currentUserId}
-              message={msg.message}
-              createdAt={msg.createdAt}
-              read={msg.read}
-            />
+      {messages.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-full text-gray-400 select-none gap-3">
+          <div className="w-16 h-16 rounded-2xl bg-purple-50 flex items-center justify-center">
+            <BsPersonFill size={28} className="text-purple-200" />
           </div>
-        )
+          <p className="text-sm font-medium text-gray-400">No messages yet</p>
+        </div>
+      ) : (
+        <>
+          {messages.map((msg, index) =>
+            msg.type === "system" ? (
+              <DateDivider
+                key={msg._id || index}
+                label={msg.message}
+              />
+            ) : (
+              <div key={msg._id || index} className="msg-enter">
+                <Message
+                  senderId={msg.senderId || msg.sender}
+                  currentUserId={currentUserId}
+                  message={msg.message}
+                  createdAt={msg.createdAt}
+                  read={msg.read}
+                />
+              </div>
+            )
+          )}
+          <div ref={bottomRef} />
+        </>
       )}
-      <div ref={bottomRef} />
     </div>
   );
 };
@@ -228,6 +242,7 @@ const Chat = () => {
   const [usersLoading, setUsersLoading] = useState(true);
   const { mode, setMode } = useMode();
   const [activeRoom, setActiveRoom] = useState(null);
+  const [roomListKey, setRoomListKey] = useState(0);
 
   const formatLastSeen = (date) => {
     if (!date) return "Offline";
@@ -236,6 +251,11 @@ const Chat = () => {
     if (diff < 3600) return `Active ${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `Active ${Math.floor(diff / 3600)}h ago`;
     return `Active ${Math.floor(diff / 86400)}d ago`;
+  };
+
+  const handleLeaveRoom = () => {
+    setActiveRoom(null);
+    setRoomListKey((k) => k + 1); // remount RoomList to refetch fresh membership
   };
 
   // Online users
@@ -347,9 +367,9 @@ const Chat = () => {
     <main className="flex h-screen bg-gray-100 overflow-hidden">
 
       {/* Sidebar */}
-      <Sidebar mode={mode} onModeChange={(m) => { setMode(m); }} />
+      <Sidebar mode={mode} onModeChange={setMode} />
 
-      {/* Left panel — DM list or Room list */}
+      {/* Left panel */}
       {mode === "dm" ? (
         <ConversationList
           onlineUsers={onlineUsers}
@@ -360,18 +380,24 @@ const Chat = () => {
         />
       ) : (
         <RoomList
+          key={roomListKey}
           activeRoom={activeRoom}
           onSelectRoom={setActiveRoom}
+          currentUserId={user._id}
         />
       )}
 
-      {/* Right panel — Chat area */}
+      {/* Right panel */}
       <section className="flex-1 flex flex-col min-w-0 bg-white overflow-hidden">
 
-        {/* ── Rooms mode ── */}
+        {/* Rooms mode */}
         {mode === "rooms" && (
           activeRoom
-            ? <RoomChat activeRoom={activeRoom} currentUserId={user._id} />
+            ? <RoomChat
+              activeRoom={activeRoom}
+              currentUserId={user._id}
+              onLeave={handleLeaveRoom}
+            />
             : <EmptyState
               icon={<span className="text-4xl">🏠</span>}
               title="Join a room"
@@ -379,11 +405,10 @@ const Chat = () => {
             />
         )}
 
-        {/* ── DM mode ── */}
+        {/* DM mode */}
         {mode === "dm" && (
           activeUser ? (
             <>
-              {/* Header */}
               <header className="h-[65px] flex-shrink-0 bg-white border-b border-gray-100 flex items-center px-5 gap-3 select-none">
                 <Avatar username={activeUser?.username} size="md" online={isActiveUserOnline} />
                 <div className="flex-1 min-w-0">
@@ -408,13 +433,11 @@ const Chat = () => {
                 </div>
               </header>
 
-              {/* Messages */}
               <div className="flex-1 flex flex-col overflow-hidden">
                 <ChatBox messages={messages[activeUser._id] || []} currentUserId={user._id} />
                 {isTyping && <TypingBubble />}
               </div>
 
-              {/* Input */}
               <ChatInput activeUser={activeUser} />
             </>
           ) : (

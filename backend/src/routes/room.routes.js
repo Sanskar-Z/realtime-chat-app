@@ -4,7 +4,8 @@ import {
     createRoom,
     getRooms,
     joinRoom,
-    getRoomMessages
+    getRoomMessages,
+    leaveRoom
 } from "../controllers/room.controller.js"
 
 const router = Router()
@@ -15,5 +16,6 @@ router.post("/create", createRoom)
 router.get("/", getRooms)
 router.post("/:roomId/join", joinRoom)
 router.get("/:roomId/messages", getRoomMessages)
+router.post("/:roomId/leave", leaveRoom)
 
 export default router
