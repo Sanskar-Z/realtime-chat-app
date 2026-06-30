@@ -27,6 +27,7 @@ const createRoom = asyncHandler(async (req, res) => {
 const getRooms = asyncHandler(async (req, res) => {
     const rooms = await Room.find()
         .populate("createdBy", "username")
+        .populate("members", "username")
         .sort({ createdAt: -1 })
 
     return res

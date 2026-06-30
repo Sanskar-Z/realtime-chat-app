@@ -22,7 +22,7 @@ const RoomList = ({ activeRoom, onSelectRoom, currentUserId }) => {
     }, [])
 
     const isMember = (room) =>
-        room.members?.some((id) => id.toString() === currentUserId?.toString()) ?? false
+        room.members?.some((member) => member?._id.toString() === currentUserId?.toString()) ?? false
 
     const handleCreate = async (e) => {
         e.preventDefault()
@@ -45,21 +45,22 @@ const RoomList = ({ activeRoom, onSelectRoom, currentUserId }) => {
 
     const handleJoin = async (room) => {
         try {
-            await api.post(`/rooms/${room._id}/join`)
-            const updatedRoom = {
-                ...room,
-                members: [...(room.members || []), currentUserId]
-            }
-            setRooms((prev) =>
-                prev.map((r) => r._id === room._id ? updatedRoom : r)
-            )
-            setJoinError("")
-            setTab("joined") // switch to My Rooms after joining
-            onSelectRoom(updatedRoom)
+            await api.post(`/rooms/${room._id}/join`);
+
+            const res = await api.get("/rooms");
+            const rooms = res.data.data;
+
+            setRooms(rooms);
+
+            const joinedRoom = rooms.find(r => r._id === room._id);
+
+            setTab("joined");
+            setJoinError("");
+            onSelectRoom(joinedRoom);
         } catch (err) {
-            setJoinError(err.response?.data?.message || "Failed to join room")
+            setJoinError(err.response?.data?.message || "Failed to join room");
         }
-    }
+    };
 
     const handleSelect = (room) => {
         setJoinError("")

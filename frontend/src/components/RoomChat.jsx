@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import socket from "../socket/socket"
 import api from "../services/api"
 import { BsPeopleFill, BsBoxArrowRight } from "react-icons/bs"
-import { FiSend, FiSmile, FiPaperclip } from "react-icons/fi"
+import { FiSend, FiSmile, FiPaperclip, FiX } from "react-icons/fi"
 
 // ─── Room message bubble ───────────────────────────────────────────────────────
 const RoomMessage = ({ msg, currentUserId }) => {
@@ -46,6 +46,7 @@ const RoomChat = ({ activeRoom, currentUserId, onLeave }) => {
     const [leaving, setLeaving] = useState(false)
     const bottomRef = useRef(null)
     const inputRef = useRef(null)
+    const [showMembers, setShowMembers] = useState(false)
 
     const handleLeave = async () => {
         if (leaving) return
@@ -134,7 +135,16 @@ const RoomChat = ({ activeRoom, currentUserId, onLeave }) => {
                         {activeRoom.members?.length || 0} members
                     </p>
                 </div>
-                <BsPeopleFill size={16} className="text-gray-300 flex-shrink-0" />
+
+                <button
+                    onClick={() => setShowMembers(!showMembers)}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-150
+                            ${showMembers
+                            ? "bg-blue-500 text-white shadow-sm shadow-blue-100"
+                            : "text-gray-400 hover:bg-blue-50 hover:text-blue-500"
+                        }`}>
+                    {showMembers ? <FiX size={16} /> : <BsPeopleFill size={16} />}
+                </button>
 
                 {/* Leave button */}
                 <button
@@ -145,37 +155,89 @@ const RoomChat = ({ activeRoom, currentUserId, onLeave }) => {
                 >
                     <BsBoxArrowRight size={16} />
                 </button>
-            </header>
+            </header >
 
-            {/* Messages */}
-            <div
-                className="flex-1 overflow-y-auto px-6 py-5 space-y-2"
-                style={{
-                    backgroundColor: "#F7F8FA",
-                    backgroundImage: "radial-gradient(circle, #e2e8f0 1px, transparent 1px)",
-                    backgroundSize: "24px 24px"
-                }}
-            >
-                {messages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-gray-400 select-none gap-3">
-                        <div className="w-16 h-16 rounded-2xl bg-purple-50 flex items-center justify-center">
-                            <BsPeopleFill size={28} className="text-purple-200" />
+            <div className="flex h-full overflow-hidden bg-white">
+                {/* Messages */}
+                < div
+                    className="flex-1 overflow-y-auto px-6 py-5 space-y-2"
+                    style={{
+                        backgroundColor: "#F7F8FA",
+                        backgroundImage: "radial-gradient(circle, #e2e8f0 1px, transparent 1px)",
+                        backgroundSize: "24px 24px"
+                    }
+                    }
+                >
+                    {
+                        messages.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-full text-gray-400 select-none gap-3">
+                                <div className="w-16 h-16 rounded-2xl bg-purple-50 flex items-center justify-center">
+                                    <BsPeopleFill size={28} className="text-purple-200" />
+                                </div>
+                                <p className="text-sm font-medium text-gray-400">No messages yet</p>
+                                <p className="text-xs text-gray-300">Say hello to the room!</p>
+                            </div>
+                        ) : (
+                            messages.map((msg, index) => (
+                                <div key={msg._id || index} className="msg-enter">
+                                    <RoomMessage msg={msg} currentUserId={currentUserId} />
+                                </div>
+                            ))
+                        )
+                    }
+                    < div ref={bottomRef} />
+                </div >
+
+                {showMembers && (
+                    <div className="w-72 border-l border-gray-200 bg-white flex flex-col">
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                            <div>
+                                <h3 className="font-semibold text-gray-800">Members</h3>
+                                <p className="text-xs text-gray-400">
+                                    {activeRoom.members?.length || 0} members
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={() => setShowMembers(false)}
+                                className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-blue-50 hover:text-blue-500 transition"
+                            >
+                                <FiX size={16} />
+                            </button>
                         </div>
-                        <p className="text-sm font-medium text-gray-400">No messages yet</p>
-                        <p className="text-xs text-gray-300">Say hello to the room!</p>
+
+                        {/* Members */}
+                        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                            {activeRoom.members?.map((member) => (
+                                <div
+                                    key={member._id}
+                                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-semibold">
+                                        {member.username?.charAt(0).toUpperCase()}
+                                    </div>
+
+                                    <div>
+                                        <p className="font-medium text-gray-800">
+                                            {member.username}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+
+                            {activeRoom.members?.length === 0 && (
+                                <div className="flex items-center justify-center h-full text-sm text-gray-400">
+                                    No members found
+                                </div>
+                            )}
+                        </div>
                     </div>
-                ) : (
-                    messages.map((msg, index) => (
-                        <div key={msg._id || index} className="msg-enter">
-                            <RoomMessage msg={msg} currentUserId={currentUserId} />
-                        </div>
-                    ))
                 )}
-                <div ref={bottomRef} />
             </div>
 
             {/* Input */}
-            <footer className="bg-white border-t border-gray-100 px-4 py-3">
+            < footer className="bg-white border-t border-gray-100 px-4 py-3" >
                 <form
                     onSubmit={send}
                     className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 focus-within:border-blue-400 focus-within:bg-white focus-within:shadow-sm focus-within:shadow-blue-100 transition-all duration-150"
@@ -207,7 +269,7 @@ const RoomChat = ({ activeRoom, currentUserId, onLeave }) => {
                         <FiSend size={15} className={text.trim() ? "translate-x-px" : ""} />
                     </button>
                 </form>
-            </footer>
+            </footer >
         </>
     )
 }
