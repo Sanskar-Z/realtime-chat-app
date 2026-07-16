@@ -172,8 +172,10 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         throw new ApiError(401, "No refresh token provided")
     }
 
+    let decodedToken;
+
     try {
-        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+        decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
     } catch (error) {
         throw new ApiError(401, "Refresh token is expired or invalid")
     }

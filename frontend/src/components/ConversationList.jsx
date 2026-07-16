@@ -40,6 +40,7 @@ const ConversationList = ({
   onSelectUser,
   currentUserId,
   usersLoading,
+  unreadCounts = {},
 }) => {
   const [allUsers, setAllUsers] = useState([]);
   const [search, setSearch] = useState("");
@@ -164,11 +165,21 @@ const ConversationList = ({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline justify-between gap-1">
                         <h3
-                          className={`text-sm font-semibold truncate ${isActive ? "text-blue-600" : "text-gray-800"
+                          className={`text-sm truncate ${isActive
+                              ? "font-semibold text-blue-600"
+                              : unreadCounts[user._id] > 0
+                                ? "font-bold text-gray-900"
+                                : "font-semibold text-gray-800"
                             }`}
                         >
                           {user.username}
                         </h3>
+                        {/* Unread badge */}
+                        {!isActive && unreadCounts[user._id] > 0 && (
+                          <span className="flex-shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-blue-500 text-white text-[10px] font-semibold flex items-center justify-center leading-none">
+                            {unreadCounts[user._id] > 99 ? "99+" : unreadCounts[user._id]}
+                          </span>
+                        )}
                       </div>
 
                       {isTyping ? (

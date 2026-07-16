@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/useAuth.js";
-import { updateUserDetails } from "../services/authService.js";
+import { updateUserDetails, updatePassword } from "../services/authService.js";
+import { toast } from "react-hot-toast";
 
 const SettingsForm = () => {
   const { user, setUser } = useAuth();
@@ -35,7 +36,7 @@ const SettingsForm = () => {
       setProfileSaved(true);
       setTimeout(() => setProfileSaved(false), 2500);
     } catch (error) {
-      alert(error?.response?.data?.message);
+      toast.error(error?.response?.data?.message);
     } finally {
       setLoading(false);
     }
@@ -53,7 +54,7 @@ const SettingsForm = () => {
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      alert("New passwords do not match!");
+      toast.error("New passwords do not match!");
       return;
     }
     try {
@@ -63,9 +64,9 @@ const SettingsForm = () => {
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      alert("Password changed successfully!");
+      toast.success("Password changed successfully!");
     } catch (error) {
-      alert(error?.response?.data?.message);
+      toast.error(error?.response?.data?.message);
     } finally {
       setPwLoading(false);
     }

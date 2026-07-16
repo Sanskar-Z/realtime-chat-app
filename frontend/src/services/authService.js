@@ -1,4 +1,5 @@
 import api from "./api";
+import { toast } from "react-hot-toast";
 
 // Token storage — persists across page refreshes
 const TOKEN_KEY = "swiftchat_access_token";
@@ -21,10 +22,11 @@ export const registerUser = async (fullName, email, username, password) => {
             username,
             password,
         });
-        alert(response.data.message);
+        toast.success(response.data.message);
         return response.data;
     } catch (error) {
         console.error("Register error:", error.response?.data || error.message);
+        toast.error(error.response?.data?.message || "Registration failed");
         throw error;
     }
 };
@@ -38,10 +40,11 @@ export const loginUser = async (identifier, password) => {
         });
         // Persist token so user stays logged in after refresh
         setAccessToken(response.data.data.accessToken);
-        alert(response.data.message);
+        toast.success(response.data.message);
         return response.data;
     } catch (error) {
         console.log("Login error:", error.response?.data || error.message);
+        toast.error(error.response?.data?.message || "Login failed");
         throw error;
     }
 };
@@ -59,19 +62,19 @@ export const logoutUser = async () => {
     try {
         const response = await api.post("/users/logout");
         setAccessToken(null); // Clear token on logout
-        alert(response.data.message);
+        toast.success(response.data.message);
     } catch (error) {
-        alert(error.response?.data.message);
+        toast.error(error.response?.data?.message || "Logout failed");
     }
 };
 
 export const updateUserDetails = async (userData) => {
     try {
         const response = await api.patch("/users/update-user", userData);
-        alert(response.data.message);
+        toast.success(response.data.message);
         return response.data;
     } catch (error) {
-        alert(error.response?.data.message);
+        toast.error(error.response?.data?.message || "Failed to update profile");
         throw error;
     }
 };
@@ -83,10 +86,10 @@ export const updatePassword = async (oldPassword, newPassword, confirmPassword) 
             newPassword,
             confirmPassword
         });
-        alert(response.data.message);
+        toast.success(response.data.message);
         return response.data;
     } catch (error) {
-        alert(error.response?.data.message);
+        toast.error(error.response?.data?.message || "Failed to update password");
         throw error;
     }
 };

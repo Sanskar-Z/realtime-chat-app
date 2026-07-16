@@ -242,6 +242,7 @@ const Chat = () => {
   const [usersLoading, setUsersLoading] = useState(true);
   const { mode, setMode } = useMode();
   const [activeRoom, setActiveRoom] = useState(null);
+  const [unreadCounts, setUnreadCounts] = useState({}); // { userId: number }
   const [roomListKey, setRoomListKey] = useState(0);
 
   const formatLastSeen = (date) => {
@@ -274,10 +275,15 @@ const Chat = () => {
       const chatUserId = msg.senderId === user._id ? msg.receiverId : msg.senderId;
       if (!chatUserId) return;
       addMessage(chatUserId, msg);
+      // Increment unread count if this conversation is not currently open
+      setUnreadCounts((prev) => {
+        if (activeUser?._id === chatUserId) return prev; // already open — no badge
+        return { ...prev, [chatUserId]: (prev[chatUserId] || 0) + 1 };
+      });
     };
     socket.on("private-message", handle);
     return () => socket.off("private-message", handle);
-  }, [user]);
+  }, [user, activeUser]);
 
   // Sent acknowledgement
   useEffect(() => {
@@ -374,9 +380,13 @@ const Chat = () => {
         <ConversationList
           onlineUsers={onlineUsers}
           activeUser={activeUser}
-          onSelectUser={setActiveUser}
+          onSelectUser={(u) => {
+            setActiveUser(u);
+            setUnreadCounts((prev) => ({ ...prev, [u._id]: 0 }));
+          }}
           currentUserId={user._id}
           usersLoading={usersLoading}
+          unreadCounts={unreadCounts}
         />
       ) : (
         <RoomList

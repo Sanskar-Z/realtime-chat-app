@@ -4,6 +4,7 @@ import LoginUser from "./components/LoginUser";
 import ProtectedRoute from "../routes/ProtectedRoute";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Settings from "./pages/Settings";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const router = createBrowserRouter([
@@ -33,8 +34,13 @@ function App() {
     },
   ]);
 
-  return <RouterProvider router={router} />
+  return (
+    <>
+      <Toaster />
 
+      <RouterProvider router={router} />
+    </>
+  )
 }
 
 export default App;

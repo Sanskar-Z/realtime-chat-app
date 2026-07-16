@@ -4,6 +4,7 @@ import { useAuth } from "../context/useAuth";
 import { NavLink, useNavigate } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import logo from "../images/SwiftChat.png";
+import { toast } from "react-hot-toast";
 
 const LoginUser = () => {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
@@ -18,7 +19,7 @@ const LoginUser = () => {
     e.preventDefault();
 
     if ([usernameOrEmail, password].some((f) => f.trim() === "")) {
-      alert("All fields are required");
+      toast.error("All fields are required");
       return;
     }
 
@@ -29,9 +30,9 @@ const LoginUser = () => {
       navigate("/");
     } catch (error) {
       if (error.response?.data?.message) {
-        alert(error.response.data.message);
+        toast.error(error.response.data.message);
       } else {
-        alert("Something went wrong. Please try again.");
+        toast.error("Something went wrong. Please try again.");
       }
     } finally {
       setIsLoading(false);
