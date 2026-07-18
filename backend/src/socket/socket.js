@@ -7,6 +7,8 @@ import { RoomMessage } from '../models/roomMessage.model.js'
 
 const server = createServer(app)
 
+const MAX_MESSAGE_LENGTH = 500
+
 const io = new Server(server, {
   cors: {
     origin: process.env.CORS_ORIGIN,
@@ -92,6 +94,7 @@ io.on("connection", (socket) => {
 
   socket.on("private-message", async ({ toUserId, message }) => {
     if (!message?.trim()) return
+    if (message.length > MAX_MESSAGE_LENGTH) return // reject oversized messages
 
     try {
       const savedMessage = await Message.create({
@@ -140,6 +143,7 @@ io.on("connection", (socket) => {
 
   socket.on("room-message", async ({ roomId, message }) => {
     if (!message?.trim()) return
+    if (message.length > MAX_MESSAGE_LENGTH) return // reject oversized messages
 
     try {
       const savedMessage = await RoomMessage.create({
